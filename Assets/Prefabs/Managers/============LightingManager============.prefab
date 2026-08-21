@@ -1,0 +1,451 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8183958482278946327
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6312349704928495420}
+  - component: {fileID: 3396225522924585539}
+  - component: {fileID: 7443403615731962900}
+  - component: {fileID: 8216613400829712707}
+  - component: {fileID: 4621595609330186204}
+  - component: {fileID: 2692265976633912589}
+  m_Layer: 0
+  m_Name: ============LightingManager============
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6312349704928495420
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8183958482278946327}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3396225522924585539
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8183958482278946327}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5cbbd11fdaea534c87c4e8ddad19f9d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  skyAnimator: {fileID: 0}
+  redLightsObject: {fileID: 0}
+  blueLightsObject: {fileID: 0}
+  redSource: {fileID: 0}
+  blueSource: {fileID: 0}
+  lightmapStateManager: {fileID: 2692265976633912589}
+  states:
+  - stateName: Tapat
+    skyAnimatorTrigger: Tapat
+    entries:
+    - light: {fileID: 0}
+      startIntensity: 0.38
+      targetIntensity: 0.38
+    - light: {fileID: 0}
+      startIntensity: 0.02
+      targetIntensity: 0.05
+    - light: {fileID: 0}
+      startIntensity: 2
+      targetIntensity: 2
+    - light: {fileID: 0}
+      startIntensity: 26
+      targetIntensity: 26
+    - light: {fileID: 0}
+      startIntensity: 11.5
+      targetIntensity: 11.5
+    - light: {fileID: 0}
+      startIntensity: 0.7
+      targetIntensity: 0.7
+    - light: {fileID: 0}
+      startIntensity: 0.5
+      targetIntensity: 0.5
+    - light: {fileID: 0}
+      startIntensity: 0.4
+      targetIntensity: 0.4
+    - light: {fileID: 0}
+      startIntensity: 0.5
+      targetIntensity: 0.5
+    - light: {fileID: 0}
+      startIntensity: 10
+      targetIntensity: 10
+    - light: {fileID: 0}
+      startIntensity: 20
+      targetIntensity: 20
+    - light: {fileID: 0}
+      startIntensity: 10.28
+      targetIntensity: 10.28
+    - light: {fileID: 0}
+      startIntensity: 20
+      targetIntensity: 20
+  - stateName: Radiografia
+    skyAnimatorTrigger: Radiog
+    entries:
+    - light: {fileID: 0}
+      startIntensity: 0.38
+      targetIntensity: 9
+    - light: {fileID: 0}
+      startIntensity: 0.01
+      targetIntensity: 0.05
+    - light: {fileID: 0}
+      startIntensity: 2
+      targetIntensity: 2
+    - light: {fileID: 0}
+      startIntensity: 26
+      targetIntensity: 26
+    - light: {fileID: 0}
+      startIntensity: 11.6
+      targetIntensity: 11.6
+    - light: {fileID: 0}
+      startIntensity: 0.7
+      targetIntensity: 0.7
+    - light: {fileID: 0}
+      startIntensity: 0.5
+      targetIntensity: 0.5
+    - light: {fileID: 0}
+      startIntensity: 0.4
+      targetIntensity: 0.4
+    - light: {fileID: 0}
+      startIntensity: 0.5
+      targetIntensity: 0.5
+    - light: {fileID: 0}
+      startIntensity: 10
+      targetIntensity: 10
+    - light: {fileID: 0}
+      startIntensity: 20
+      targetIntensity: 20
+    - light: {fileID: 0}
+      startIntensity: 10.28
+      targetIntensity: 10.28
+    - light: {fileID: 0}
+      startIntensity: 20
+      targetIntensity: 100
+    - light: {fileID: 0}
+      startIntensity: 0
+      targetIntensity: 50
+    - light: {fileID: 0}
+      startIntensity: 0
+      targetIntensity: 100
+  - stateName: Lluna
+    skyAnimatorTrigger: Lluna
+    entries:
+    - light: {fileID: 0}
+      startIntensity: 60
+      targetIntensity: 70
+    - light: {fileID: 0}
+      startIntensity: 0.05
+      targetIntensity: 0.08
+    - light: {fileID: 0}
+      startIntensity: 2
+      targetIntensity: 2
+    - light: {fileID: 0}
+      startIntensity: 26
+      targetIntensity: 26
+    - light: {fileID: 0}
+      startIntensity: 11.6
+      targetIntensity: 11.6
+    - light: {fileID: 0}
+      startIntensity: 0.7
+      targetIntensity: 0.7
+    - light: {fileID: 0}
+      startIntensity: 0.5
+      targetIntensity: 0.5
+    - light: {fileID: 0}
+      startIntensity: 0.4
+      targetIntensity: 0.4
+    - light: {fileID: 0}
+      startIntensity: 0.5
+      targetIntensity: 0.5
+    - light: {fileID: 0}
+      startIntensity: 10
+      targetIntensity: 10
+    - light: {fileID: 0}
+      startIntensity: 20
+      targetIntensity: 20
+    - light: {fileID: 0}
+      startIntensity: 10.28
+      targetIntensity: 10.28
+    - light: {fileID: 0}
+      startIntensity: 100
+      targetIntensity: 100
+    - light: {fileID: 0}
+      startIntensity: 50
+      targetIntensity: 50
+    - light: {fileID: 0}
+      startIntensity: 60
+      targetIntensity: 100
+    - light: {fileID: 0}
+      startIntensity: 0
+      targetIntensity: 20
+    - light: {fileID: 0}
+      startIntensity: 0
+      targetIntensity: 50
+    - light: {fileID: 0}
+      startIntensity: 0
+      targetIntensity: 3
+    - light: {fileID: 0}
+      startIntensity: 0
+      targetIntensity: 120
+    - light: {fileID: 0}
+      startIntensity: 0
+      targetIntensity: 195
+    - light: {fileID: 0}
+      startIntensity: 0
+      targetIntensity: 197
+    - light: {fileID: 0}
+      startIntensity: 0
+      targetIntensity: 33
+    - light: {fileID: 0}
+      startIntensity: 0
+      targetIntensity: 50
+  - stateName: Blue
+    skyAnimatorTrigger: Blue
+    entries:
+    - light: {fileID: 0}
+      startIntensity: 0
+      targetIntensity: 0.01
+    - light: {fileID: 0}
+      startIntensity: 0
+      targetIntensity: 5
+    - light: {fileID: 0}
+      startIntensity: 100
+      targetIntensity: 150
+    - light: {fileID: 0}
+      startIntensity: 100
+      targetIntensity: 150
+    - light: {fileID: 0}
+      startIntensity: 0
+      targetIntensity: 3
+    - light: {fileID: 0}
+      startIntensity: 0
+      targetIntensity: 2
+    - light: {fileID: 0}
+      startIntensity: 0
+      targetIntensity: 2
+    - light: {fileID: 0}
+      startIntensity: 0
+      targetIntensity: 2
+    - light: {fileID: 0}
+      startIntensity: 0
+      targetIntensity: 2
+    - light: {fileID: 0}
+      startIntensity: 0
+      targetIntensity: 0.75
+    - light: {fileID: 0}
+      startIntensity: 0
+      targetIntensity: 1
+    - light: {fileID: 0}
+      startIntensity: 0
+      targetIntensity: 1
+    - light: {fileID: 0}
+      startIntensity: 0
+      targetIntensity: 0.75
+    - light: {fileID: 0}
+      startIntensity: 0
+      targetIntensity: 1
+    - light: {fileID: 0}
+      startIntensity: 0
+      targetIntensity: 10
+    - light: {fileID: 0}
+      startIntensity: 500
+      targetIntensity: 1000
+    - light: {fileID: 0}
+      startIntensity: 0
+      targetIntensity: 10.28
+    - light: {fileID: 0}
+      startIntensity: 0
+      targetIntensity: 20
+  transitionDuration: 3
+  blueLightsDelay: 2
+  _previewState: 0
+  enableKeyboardShortcuts: 1
+--- !u!114 &7443403615731962900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8183958482278946327}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a6e27b6a9d6a1d40ab4cdfdb15f6499, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  windStates:
+  - transitionClip: {fileID: 0}
+    idleLoopClip: {fileID: 32900000, guid: 4f57ca16bbfeb8b4aba6bf2133c73682, type: 3}
+    transitionOpacity: 0
+    idleOpacity: 1
+    videoOpacity: 0.36
+  - transitionClip: {fileID: 32900000, guid: f99029239ec68af43b7c124480140815, type: 3}
+    idleLoopClip: {fileID: 32900000, guid: 60439cdfd226b2d4096ade7488baa8ae, type: 3}
+    transitionOpacity: 1
+    idleOpacity: 1
+    videoOpacity: 0.22
+  - transitionClip: {fileID: 32900000, guid: 683aa5e7e2275f3478b7f9d23bd21420, type: 3}
+    idleLoopClip: {fileID: 32900000, guid: c9c5ec67be8457e4c8fb3ad58f397eaf, type: 3}
+    transitionOpacity: 1
+    idleOpacity: 1
+    videoOpacity: 0.08
+  - transitionClip: {fileID: 32900000, guid: b4db4ad2d988b26419a9964c2def23a6, type: 3}
+    idleLoopClip: {fileID: 32900000, guid: 4f57ca16bbfeb8b4aba6bf2133c73682, type: 3}
+    transitionOpacity: 1
+    idleOpacity: 1
+    videoOpacity: 0.18
+  blizzardVideoCamera: {fileID: 0}
+  vatWindBlendDuration: 1.5
+  playPlantaMjAlembic: 1
+  plantaMjPlaybackSpeed: 1
+  preloadPlayersOnAwake: 1
+  videoPlayersRootName: Runtime_VideoPlayers
+  videoPlayersRootStartsActive: 0
+  prewarmPlayersWhileHidden: 1
+  renderTextureWidth: 0
+  renderTextureHeight: 0
+  cameraSurfaceWidth: 44
+  cameraSurfaceHeight: 28
+  cameraSurfaceDepth: 6
+  cameraSurfaceLocalOffset: {x: 0, y: 0}
+  stabilizeBlizzardSurfaceOnScreen: 1
+  lockBlizzardSurfaceWorldZ: 0
+  backgroundCopyDistanceFromNearBlizzard: 12
+  horizontalMotionCompensation: 0.2
+  horizontalWorldUnitsPerTextureRepeat: 24
+  blizzardRenderingLayerMask: 1
+  enableIdleBackgroundLayer: 1
+  idleBackgroundAnchoredToWorld: 1
+  idleBackgroundWidth: 160
+  idleBackgroundHeight: 90
+  idleBackgroundDepth: 5
+  idleBackgroundOffset: {x: 0, y: 0}
+  idleBackgroundUvTiling: {x: 4, y: 3}
+  idleBackgroundOpacityMultiplier: 0.35
+  idleBackgroundHorizontalMotionCompensation: 0.12
+  blizzardVideoClip: {fileID: 32900000, guid: e50672ac1f82d8e4dbcdc945aa7aeedb, type: 3}
+  blizzardVideoPlayer: {fileID: 0}
+--- !u!114 &8216613400829712707
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8183958482278946327}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5371d418928ed1446ad267ad7ee60889, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  windManager: {fileID: 7443403615731962900}
+  plantManager: {fileID: 4621595609330186204}
+  runTreeAnimations: 1
+  runFireAnimations: 1
+  runBlizzardVideos: 0
+  autoCollectPerformanceTargets: 1
+  enableKeyboardShortcuts: 1
+--- !u!114 &4621595609330186204
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8183958482278946327}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5bffdf8b07df24446ac84081e06bbae2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  plants:
+  - animator: {fileID: 0}
+  - animator: {fileID: 0}
+  - animator: {fileID: 0}
+  - animator: {fileID: 0}
+  - animator: {fileID: 0}
+  - animator: {fileID: 0}
+  - animator: {fileID: 0}
+  - animator: {fileID: 0}
+  - animator: {fileID: 0}
+  - animator: {fileID: 0}
+  - animator: {fileID: 0}
+  - animator: {fileID: 0}
+  - animator: {fileID: 0}
+  - animator: {fileID: 0}
+  - animator: {fileID: 0}
+  - animator: {fileID: 0}
+  - animator: {fileID: 0}
+  windyEntryState: WindyEntry
+  windyLoopState: WindyLoop
+  windyOutState: WindyOut
+  idleSmoothState: IdleSmoth
+  crossFadeTime: 0
+  loopDurationBeforeOut: 2
+--- !u!114 &2692265976633912589
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8183958482278946327}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c98b45629f7d4c64b1d430a7ccbdc301, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  warm1:
+    colors:
+    - {fileID: 2800000, guid: 6ff1612dd2307304384da10e4113bd87, type: 3}
+    - {fileID: 2800000, guid: f84dcd263448f2c4d905e34e2ae6df0f, type: 3}
+    - {fileID: 2800000, guid: cdcb6a1753675964b872203119e17629, type: 3}
+    directions:
+    - {fileID: 2800000, guid: 7bf5856b1e806dd42b1c70f7ab94a11e, type: 3}
+    - {fileID: 2800000, guid: 982f74a9f72bc444fb1455a09889e8a4, type: 3}
+    - {fileID: 2800000, guid: d0761cdeaab1b1e4594877a8f7535a47, type: 3}
+    shadowMasks:
+    - {fileID: 2800000, guid: 3fc600199b03a744ca45e8dd8346fb52, type: 3}
+    - {fileID: 2800000, guid: 5d9b6133817ed9a45afea7503dc60019, type: 3}
+    - {fileID: 2800000, guid: 9817de8d65977c44ebba22ecc2ece3c9, type: 3}
+  warm2:
+    colors:
+    - {fileID: 2800000, guid: 6ff1612dd2307304384da10e4113bd87, type: 3}
+    - {fileID: 2800000, guid: f84dcd263448f2c4d905e34e2ae6df0f, type: 3}
+    - {fileID: 2800000, guid: cdcb6a1753675964b872203119e17629, type: 3}
+    directions:
+    - {fileID: 2800000, guid: 7bf5856b1e806dd42b1c70f7ab94a11e, type: 3}
+    - {fileID: 2800000, guid: 982f74a9f72bc444fb1455a09889e8a4, type: 3}
+    - {fileID: 2800000, guid: d0761cdeaab1b1e4594877a8f7535a47, type: 3}
+    shadowMasks:
+    - {fileID: 2800000, guid: 3fc600199b03a744ca45e8dd8346fb52, type: 3}
+    - {fileID: 2800000, guid: 5d9b6133817ed9a45afea7503dc60019, type: 3}
+    - {fileID: 2800000, guid: 9817de8d65977c44ebba22ecc2ece3c9, type: 3}
+  blue:
+    colors:
+    - {fileID: 2800000, guid: 6ff1612dd2307304384da10e4113bd87, type: 3}
+    - {fileID: 2800000, guid: f84dcd263448f2c4d905e34e2ae6df0f, type: 3}
+    - {fileID: 2800000, guid: cdcb6a1753675964b872203119e17629, type: 3}
+    directions:
+    - {fileID: 2800000, guid: 7bf5856b1e806dd42b1c70f7ab94a11e, type: 3}
+    - {fileID: 2800000, guid: 982f74a9f72bc444fb1455a09889e8a4, type: 3}
+    - {fileID: 2800000, guid: d0761cdeaab1b1e4594877a8f7535a47, type: 3}
+    shadowMasks:
+    - {fileID: 2800000, guid: 3fc600199b03a744ca45e8dd8346fb52, type: 3}
+    - {fileID: 2800000, guid: 5d9b6133817ed9a45afea7503dc60019, type: 3}
+    - {fileID: 2800000, guid: 9817de8d65977c44ebba22ecc2ece3c9, type: 3}
+  applyWarmOnAwake: 1
