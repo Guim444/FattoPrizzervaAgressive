@@ -1163,6 +1163,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 301409532}
     m_Modifications:
+    - target: {fileID: 387300235227923260, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
+      propertyPath: m_BoundingSphereOverride.w
+      value: 9.1897e-41
+      objectReference: {fileID: 0}
+    - target: {fileID: 387300235227923260, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
+      propertyPath: m_BoundingSphereOverride.x
+      value: 3.376e-41
+      objectReference: {fileID: 0}
+    - target: {fileID: 387300235227923260, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
+      propertyPath: m_BoundingSphereOverride.y
+      value: 2.524355e-29
+      objectReference: {fileID: 0}
     - target: {fileID: 1375970196312274560, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
       propertyPath: m_Name
       value: CHR_Player
@@ -1218,6 +1230,18 @@ PrefabInstance:
     - target: {fileID: 4144052115794343000, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
       propertyPath: m_RenderingLayerMask
       value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 4144052115794343000, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
+      propertyPath: m_BoundingSphereOverride.w
+      value: 2.7470774e+20
+      objectReference: {fileID: 0}
+    - target: {fileID: 4144052115794343000, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
+      propertyPath: m_BoundingSphereOverride.x
+      value: 8.661e-42
+      objectReference: {fileID: 0}
+    - target: {fileID: 4144052115794343000, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
+      propertyPath: m_BoundingSphereOverride.y
+      value: 2.524355e-29
       objectReference: {fileID: 0}
     - target: {fileID: 4348642207067692730, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
       propertyPath: onDied.m_PersistentCalls.m_Calls.Array.data[0].m_Target

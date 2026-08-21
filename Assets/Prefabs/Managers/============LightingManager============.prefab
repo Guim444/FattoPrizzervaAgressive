@@ -411,41 +411,41 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   warm1:
     colors:
-    - {fileID: 2800000, guid: 6ff1612dd2307304384da10e4113bd87, type: 3}
-    - {fileID: 2800000, guid: f84dcd263448f2c4d905e34e2ae6df0f, type: 3}
-    - {fileID: 2800000, guid: cdcb6a1753675964b872203119e17629, type: 3}
+    - {fileID: 2800000, guid: b238e1a6764148928fd8a24d880a0010, type: 3}
+    - {fileID: 2800000, guid: e56b14d9a9744bc5b20bd570bb3c0011, type: 3}
+    - {fileID: 2800000, guid: 287e470cdca74ef8b53e08a3ee6f0012, type: 3}
     directions:
-    - {fileID: 2800000, guid: 7bf5856b1e806dd42b1c70f7ab94a11e, type: 3}
-    - {fileID: 2800000, guid: 982f74a9f72bc444fb1455a09889e8a4, type: 3}
-    - {fileID: 2800000, guid: d0761cdeaab1b1e4594877a8f7535a47, type: 3}
+    - {fileID: 2800000, guid: a127d09565234e259c93ccf1ccca0010, type: 3}
+    - {fileID: 2800000, guid: d45a03c898634ab4b1fac46faa2b0011, type: 3}
+    - {fileID: 2800000, guid: 176d36fbcb964de7a42df792dd5e0012, type: 3}
     shadowMasks:
-    - {fileID: 2800000, guid: 3fc600199b03a744ca45e8dd8346fb52, type: 3}
-    - {fileID: 2800000, guid: 5d9b6133817ed9a45afea7503dc60019, type: 3}
-    - {fileID: 2800000, guid: 9817de8d65977c44ebba22ecc2ece3c9, type: 3}
+    - {fileID: 2800000, guid: c349f2b7875249a3a0e9b35e991a0010, type: 3}
+    - {fileID: 2800000, guid: f67c25eaba854cd6b31ce681cc4d0011, type: 3}
+    - {fileID: 2800000, guid: 398f581dedb84f09b64f19b4ff700012, type: 3}
   warm2:
     colors:
-    - {fileID: 2800000, guid: 6ff1612dd2307304384da10e4113bd87, type: 3}
-    - {fileID: 2800000, guid: f84dcd263448f2c4d905e34e2ae6df0f, type: 3}
-    - {fileID: 2800000, guid: cdcb6a1753675964b872203119e17629, type: 3}
+    - {fileID: 2800000, guid: 5ba17a30f041472bac742ce732a30020, type: 3}
+    - {fileID: 2800000, guid: 8ed4ad6303744a5edfa75f1a65d60021, type: 3}
+    - {fileID: 2800000, guid: b107d09626a74d81a2da824d98a90022, type: 3}
     directions:
-    - {fileID: 2800000, guid: 7bf5856b1e806dd42b1c70f7ab94a11e, type: 3}
-    - {fileID: 2800000, guid: 982f74a9f72bc444fb1455a09889e8a4, type: 3}
-    - {fileID: 2800000, guid: d0761cdeaab1b1e4594877a8f7535a47, type: 3}
+    - {fileID: 2800000, guid: 4a90692fef30461a9b631bd621920020, type: 3}
+    - {fileID: 2800000, guid: 7dc39c520263494dce964e0954c50021, type: 3}
+    - {fileID: 2800000, guid: a0f6cf8515964c70f1c9713c87f80022, type: 3}
     shadowMasks:
-    - {fileID: 2800000, guid: 3fc600199b03a744ca45e8dd8346fb52, type: 3}
-    - {fileID: 2800000, guid: 5d9b6133817ed9a45afea7503dc60019, type: 3}
-    - {fileID: 2800000, guid: 9817de8d65977c44ebba22ecc2ece3c9, type: 3}
+    - {fileID: 2800000, guid: 6cb28b410152483cbd853df843b40020, type: 3}
+    - {fileID: 2800000, guid: 9fe5be7404854b6fe0b8602b76e70021, type: 3}
+    - {fileID: 2800000, guid: c218e1a737b84e92b3eb935ea9ba0022, type: 3}
   blue:
     colors:
-    - {fileID: 2800000, guid: 6ff1612dd2307304384da10e4113bd87, type: 3}
-    - {fileID: 2800000, guid: f84dcd263448f2c4d905e34e2ae6df0f, type: 3}
-    - {fileID: 2800000, guid: cdcb6a1753675964b872203119e17629, type: 3}
+    - {fileID: 2800000, guid: e43b03c959da40b4c60db570cbdc0030, type: 3}
+    - {fileID: 2800000, guid: 176e36fc8c0d43e7f930e8a3ef000031, type: 3}
+    - {fileID: 2800000, guid: 4a91692fbf30461a2c631bd612330032, type: 3}
     directions:
-    - {fileID: 2800000, guid: 7bf5856b1e806dd42b1c70f7ab94a11e, type: 3}
-    - {fileID: 2800000, guid: 982f74a9f72bc444fb1455a09889e8a4, type: 3}
-    - {fileID: 2800000, guid: d0761cdeaab1b1e4594877a8f7535a47, type: 3}
+    - {fileID: 2800000, guid: d32af2b848c94fa3b5fca46fbacb0030, type: 3}
+    - {fileID: 2800000, guid: 065d25eb7bfc42d6e82fd792edef0031, type: 3}
+    - {fileID: 2800000, guid: 3980581eae2f45091b520ac501220032, type: 3}
     shadowMasks:
-    - {fileID: 2800000, guid: 3fc600199b03a744ca45e8dd8346fb52, type: 3}
-    - {fileID: 2800000, guid: 5d9b6133817ed9a45afea7503dc60019, type: 3}
-    - {fileID: 2800000, guid: 9817de8d65977c44ebba22ecc2ece3c9, type: 3}
+    - {fileID: 2800000, guid: f54c14da6aeb41c5d71ec681dced0030, type: 3}
+    - {fileID: 2800000, guid: 287f470d9d1e44f80a41f9b4f0110031, type: 3}
+    - {fileID: 2800000, guid: 5ba27a30c041472b3d742ce723440032, type: 3}
   applyWarmOnAwake: 1
