@@ -17,7 +17,7 @@ MonoBehaviour:
   raymarchMinStep: 0.25
   jittering: 1
   dithering: 1
-  renderQueue: 3100
+  renderQueue: 2800
   sortingLayerID: 0
   sortingOrder: 0
   constantDensity: 0
