@@ -12,7 +12,6 @@ public class IntroSequenceManager : MonoBehaviour
 
     private static readonly int IdleFrontHash = Animator.StringToHash("IdleFront");
     private static readonly int IdleFrontHumanHash = Animator.StringToHash("IdleFrontHuman");
-    private static readonly int TransformToGhostHash = Animator.StringToHash("TransformToGhost");
 
     [Header("References")]
     [SerializeField] private Camera mainCamera;
@@ -140,13 +139,6 @@ public class IntroSequenceManager : MonoBehaviour
     public float IntroPlayerZ => introPlayerZ;
 
 
-    private bool isWalking;
-    private bool played;
-
-    private float _timer;
-
-    
-
     private void Awake()
     {
         if (playerSpriteRenderer == null && playerTransform != null)
@@ -183,20 +175,6 @@ public class IntroSequenceManager : MonoBehaviour
 
         if (_isIntroBlizzardCameraAnchored)
             PositionIntroBlizzardParticles();
-    }
-
-    private void Update()
-    {
-        if (isWalking && !played)
-        {
-            _timer += Time.deltaTime;
-
-            if (_timer >= 5f)
-            {
-                SetPlayerAnimatorTriggerIfAvailable(TransformToGhostHash);
-                played = true;
-            }
-        }
     }
 
     public void ShowBlackScreen()
@@ -461,8 +439,6 @@ public class IntroSequenceManager : MonoBehaviour
             mainCamera.backgroundColor = fadeEndBgColor;
             mainCamera.clearFlags      = _originalClearFlags;
         }
-        played = false;
-        isWalking = true;
     }
 
     private IEnumerator FadeSceneAfterDelay()
@@ -1435,12 +1411,6 @@ public class IntroSequenceManager : MonoBehaviour
     {
         if (HasPlayerAnimatorParameter(parameterHash, AnimatorControllerParameterType.Bool))
             playerAnimator.SetBool(parameterHash, value);
-    }
-
-    private void SetPlayerAnimatorTriggerIfAvailable(int parameterHash)
-    {
-        if (HasPlayerAnimatorParameter(parameterHash, AnimatorControllerParameterType.Trigger))
-            playerAnimator.SetTrigger(parameterHash);
     }
 
     private bool HasPlayerAnimatorParameter(int parameterHash, AnimatorControllerParameterType expectedType)
