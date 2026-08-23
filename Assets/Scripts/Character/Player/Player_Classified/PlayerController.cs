@@ -39,6 +39,7 @@ public class PlayerController : MonoBehaviour
             : State.Idle;
 
     public bool canMove = true;
+    public bool canSprint = true;
     public bool isGrounded;
     public bool isPunching;
     public bool isInRun;

@@ -85,6 +85,8 @@ public class IntroSequenceManager : MonoBehaviour
     [Tooltip("Mueve al jugador automáticamente en X mientras se revela durante el fade.")]
     [SerializeField] private bool autoWalkEnabled = true;
     [SerializeField] private float autoWalkSpeed  = 3f;
+    [Tooltip("Velocidad al caminar cuando el jugador obtiene el control durante la intro.")]
+    [SerializeField, Min(0f)] private float introControlledWalkSpeed = 3f;
     [SerializeField] private float introPlayerZ   = 0f;
 
     [Header("Blink — Position")]
@@ -132,6 +134,10 @@ public class IntroSequenceManager : MonoBehaviour
     private bool _hasIntroBlizzardWorldZAnchor;
     private float _introBlizzardWorldZAnchor;
     private bool _hasOriginalIntroTrackedObjectOffset;
+    private PlayerMovement _playerMovement;
+    private float _originalWalkingSpeed;
+    private bool _originalCanSprint;
+    private bool _hasOriginalIntroControlSettings;
     private readonly Dictionary<int, AnimatorControllerParameterType> _animatorParameterTypes =
         new Dictionary<int, AnimatorControllerParameterType>();
     private readonly List<ParticleSystem> _introBlizzardParticles = new List<ParticleSystem>();
@@ -335,6 +341,7 @@ public class IntroSequenceManager : MonoBehaviour
         yield return StartCoroutine(FadeFromBlack());
 
         KeepPlayerAtIntroDepth();
+        ApplyIntroPlayerControlSettings();
         if (playerCC != null) playerCC.enabled = true;
         if (playerInputHandler != null) playerInputHandler.enabled = true;
         if (playerController != null) playerController.enabled = true;
@@ -843,6 +850,8 @@ public class IntroSequenceManager : MonoBehaviour
 
     public void RestoreOriginalAnimator()
     {
+        RestoreIntroPlayerControlSettings();
+
         if (playerAnimator != null && _originalAnimatorController != null)
             playerAnimator.runtimeAnimatorController = _originalAnimatorController;
 
@@ -856,7 +865,45 @@ public class IntroSequenceManager : MonoBehaviour
 
     private void OnDisable()
     {
+        RestoreIntroPlayerControlSettings();
         RestoreGameplayAnimatorControl();
+    }
+
+    private void ApplyIntroPlayerControlSettings()
+    {
+        if (playerController == null) return;
+
+        if (_playerMovement == null)
+            _playerMovement = playerController.movement != null
+                ? playerController.movement
+                : playerController.GetComponent<PlayerMovement>();
+
+        if (!_hasOriginalIntroControlSettings)
+        {
+            if (_playerMovement != null)
+                _originalWalkingSpeed = _playerMovement.walkingSpeed;
+
+            _originalCanSprint = playerController.canSprint;
+            _hasOriginalIntroControlSettings = true;
+        }
+
+        if (_playerMovement != null)
+            _playerMovement.walkingSpeed = introControlledWalkSpeed;
+
+        playerController.canSprint = false;
+    }
+
+    private void RestoreIntroPlayerControlSettings()
+    {
+        if (!_hasOriginalIntroControlSettings) return;
+
+        if (_playerMovement != null)
+            _playerMovement.walkingSpeed = _originalWalkingSpeed;
+
+        if (playerController != null)
+            playerController.canSprint = _originalCanSprint;
+
+        _hasOriginalIntroControlSettings = false;
     }
 
     public bool TryStartChurchSequence(

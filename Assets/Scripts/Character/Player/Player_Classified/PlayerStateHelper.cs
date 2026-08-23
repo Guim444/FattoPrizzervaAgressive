@@ -34,7 +34,7 @@ public static class PlayerStateHelper
             if (staminaManager.isTired)
                 return State.Deenergized;
 
-            if (input.IsRunInputHeld && !staminaManager.isTired)
+            if (player.canSprint && input.IsRunInputHeld && !staminaManager.isTired)
             {
                 // Sprint + punch: PunchRunning no requiere stamina > 0, solo no estar agotado.
                 // (currentStamina puede llegar a 0 un frame antes de que isTired se active,
