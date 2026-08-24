@@ -4815,13 +4815,13 @@ MonoBehaviour:
   introPlayerFadeDelay: 0.1
   introPlayerFadeDuration: 10
   autoWalkEnabled: 1
-  autoWalkSpeed: 2
-  introControlledWalkSpeed: 2
+  autoWalkSpeed: 3
+  introControlledWalkSpeed: 3
   introPlayerZ: 0
   blinkStartX: -100
   blinkEndX: -15
-  blinkInterval: 5
-  fullGhostIdleDuration: 2
+  blinkInterval: 4
+  fullGhostIdleDuration: 3
   ratioQ1: 0.315
   ratioQ2: 0.663
   ratioQ3: 0.913
