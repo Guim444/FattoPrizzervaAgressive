@@ -7,9 +7,6 @@ using UnityEngine.Rendering.Universal;
 
 public class IntroSequenceManager : MonoBehaviour
 {
-    private const string PlayerSurroundLightObjectName =
-        "CHR_Player_Light_Surroundd";
-
     private static readonly int IdleFrontHash = Animator.StringToHash("IdleFront");
     private static readonly int IdleFrontHumanHash = Animator.StringToHash("IdleFrontHuman");
     private static readonly int IdleGhostFrontStateHash = Animator.StringToHash("Base Layer.Idle_Front");
@@ -28,6 +25,9 @@ public class IntroSequenceManager : MonoBehaviour
     [SerializeField] private PlayerController playerController;
     [SerializeField] private HUDManager hudManager;
     [SerializeField] private SpriteRenderer playerSpriteRenderer;
+    [SerializeField] private Light playerSorroundLight;
+    [Tooltip("Duración del apagado progresivo de la luz del jugador.")]
+    [SerializeField, Min(0f)] private float playerSurroundLightFadeDuration = 2f;
 
     [Header("Dialogue Placement")]
     [Tooltip("Superficie sobre la que se coloca al jugador al activar la escena de diálogo.")]
@@ -126,6 +126,7 @@ public class IntroSequenceManager : MonoBehaviour
     private Coroutine _blinkCoroutine;
     private Coroutine _churchSequenceCoroutine;
     private Coroutine _dialogueReturnCoroutine;
+    private Coroutine _playerSurroundLightFadeCoroutine;
     private CinemachineFramingTransposer _introFramingTransposer;
     private Vector3 _originalIntroTrackedObjectOffset;
     private CameraClearFlags _originalClearFlags;
@@ -137,6 +138,7 @@ public class IntroSequenceManager : MonoBehaviour
     private DialogueSceneMenu _dialogueSceneMenu;
     private Transform _churchPlayerSurroundLight;
     private bool _churchPlayerSurroundLightWasActive;
+    private float _churchPlayerSurroundLightOriginalIntensity;
     private bool _hasCapturedChurchPlayerLightState;
     private bool _originalPauseAnimatorControl;
     private bool _hasOriginalPauseAnimatorControl;
@@ -994,7 +996,6 @@ public class IntroSequenceManager : MonoBehaviour
         float secondDuration,
         Transform rioTutteStandard,
         Transform rioTutteTransformation,
-        Transform playerSurroundLight,
         float autoMoveCameraY,
         string dialogueSceneName,
         string lightingSceneName)
@@ -1044,7 +1045,6 @@ public class IntroSequenceManager : MonoBehaviour
             secondDuration,
             rioTutteStandard,
             rioTutteTransformation,
-            playerSurroundLight,
             autoMoveCameraY,
             dialogueSceneName,
             lightingSceneName));
@@ -1058,7 +1058,6 @@ public class IntroSequenceManager : MonoBehaviour
         float secondDuration,
         Transform rioTutteStandard,
         Transform rioTutteTransformation,
-        Transform playerSurroundLight,
         float autoMoveCameraY,
         string dialogueSceneName,
         string lightingSceneName)
@@ -1079,7 +1078,7 @@ public class IntroSequenceManager : MonoBehaviour
         if (playerController != null) playerController.enabled = false;
         if (boundaryClamp != null) boundaryClamp.enabled = false;
 
-        EnterChurchLighting(playerSurroundLight, lightingSceneName);
+        EnterChurchLighting(lightingSceneName);
 
         Coroutine cameraLowering = StartCoroutine(
             LowerCameraDuringAutoMove(autoMoveCameraY, firstDuration));
@@ -1097,7 +1096,6 @@ public class IntroSequenceManager : MonoBehaviour
 
         if (!EnterDialogueLayout(lightingSceneName, dialogueSceneName))
         {
-            RestoreChurchLighting();
             hudManager?.CompleteChurchTestCameraTransition();
             ResumePlayerAfterChurchSequence();
             _churchSequenceCoroutine = null;
@@ -1234,18 +1232,15 @@ public class IntroSequenceManager : MonoBehaviour
             yield return new WaitForSecondsRealtime(blendDuration);
 
         hudManager?.CompleteChurchTestCameraTransition();
-        RestoreChurchLighting();
         ApplyEnvironmentPhase(3);
         ResumePlayerAfterChurchSequence();
         _dialogueReturnCoroutine = null;
     }
 
-    private void EnterChurchLighting(
-        Transform playerSurroundLight,
-        string lightingSceneName)
+    private void EnterChurchLighting(string lightingSceneName)
     {
         if (_dialogueLayoutManager == null ||
-            _dialogueLayoutManager.gameObject.scene.name != lightingSceneName)
+           _dialogueLayoutManager.gameObject.scene.name != lightingSceneName)
         {
             _dialogueLayoutManager = FindComponentInScene<DialogueLayoutManager>(
                 lightingSceneName);
@@ -1253,43 +1248,36 @@ public class IntroSequenceManager : MonoBehaviour
 
         if (_dialogueLayoutManager != null)
             _dialogueLayoutManager.EnterChurchLighting();
-        else
-            Debug.LogWarning(
-                $"[{nameof(IntroSequenceManager)}] No se encontró DialogueLayoutManager para encender Auxiliar light.",
-                this);
 
-        _churchPlayerSurroundLight = playerSurroundLight != null
-            ? playerSurroundLight
-            : FindDescendantByName(
-                playerTransform,
-                PlayerSurroundLightObjectName);
-        if (_churchPlayerSurroundLight == null)
-        {
-            Debug.LogWarning(
-                $"[{nameof(IntroSequenceManager)}] CHR_Player_Light_Surroundd no está asignada en ChurchDoorTrigger.",
-                this);
-            return;
-        }
+        if (_playerSurroundLightFadeCoroutine != null)
+            StopCoroutine(_playerSurroundLightFadeCoroutine);
 
-        _churchPlayerSurroundLightWasActive =
-            _churchPlayerSurroundLight.gameObject.activeSelf;
-        _hasCapturedChurchPlayerLightState = true;
-        _churchPlayerSurroundLight.gameObject.SetActive(false);
+        _playerSurroundLightFadeCoroutine =
+            StartCoroutine(DeactivatePlayerSorroundingLight());
     }
 
-    private void RestoreChurchLighting()
+    private IEnumerator DeactivatePlayerSorroundingLight()
     {
-        _dialogueLayoutManager?.RestoreChurchLighting();
+        if (!playerSorroundLight) yield break;
 
-        if (_hasCapturedChurchPlayerLightState &&
-            _churchPlayerSurroundLight != null)
+        _hasCapturedChurchPlayerLightState = true;
+        _churchPlayerSurroundLightOriginalIntensity = playerSorroundLight.intensity;
+
+        float elapsed = 0f;
+        while (elapsed < playerSurroundLightFadeDuration)
         {
-            _churchPlayerSurroundLight.gameObject.SetActive(
-                _churchPlayerSurroundLightWasActive);
+            elapsed += Time.deltaTime;
+            float progress = playerSurroundLightFadeDuration > 0f
+                ? Mathf.Clamp01(elapsed / playerSurroundLightFadeDuration)
+                : 1f;
+
+            playerSorroundLight.intensity = Mathf.Lerp(_churchPlayerSurroundLightOriginalIntensity, 0f, progress);
+
+            yield return null;
         }
 
-        _churchPlayerSurroundLight = null;
-        _hasCapturedChurchPlayerLightState = false;
+        playerSorroundLight.intensity = 0f;
+        playerSorroundLight.gameObject.SetActive(false);
     }
 
     private static Transform FindDescendantByName(

@@ -1089,7 +1089,6 @@ MonoBehaviour:
   secondAutoMoveDuration: 10
   rioTutteStandard: {fileID: 1209652340}
   rioTutteTransformation: {fileID: 2123647840}
-  playerSurroundLight: {fileID: 1345671714}
   autoMoveCameraY: 5
   dialogueSceneName: DialogueScene
   lightingSceneName: LightingScene
@@ -2765,15 +2764,15 @@ Transform:
   - {fileID: 704993144}
   m_Father: {fileID: 266818183}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &1345671714 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 5856789805509242546, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
-  m_PrefabInstance: {fileID: 448675059}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1352940641 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2289442210450065861, guid: 4328e6f210d8a654a83e2f3231ea7004, type: 3}
   m_PrefabInstance: {fileID: 3828182740764195160}
+  m_PrefabAsset: {fileID: 0}
+--- !u!108 &1358398399 stripped
+Light:
+  m_CorrespondingSourceObject: {fileID: 4144052115794343000, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
+  m_PrefabInstance: {fileID: 448675059}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1497444814
 GameObject:
@@ -4776,6 +4775,8 @@ MonoBehaviour:
   playerController: {fileID: 2004004919}
   hudManager: {fileID: 2021292074}
   playerSpriteRenderer: {fileID: 2004004950}
+  playerSorroundLight: {fileID: 1358398399}
+  playerSurroundLightFadeDuration: 2
   dialoguePlayerPlatform: {fileID: 1615518505}
   dialoguePlayerPlatformClearance: 0.5
   dialogueCameraWorldHeight: 2.5
