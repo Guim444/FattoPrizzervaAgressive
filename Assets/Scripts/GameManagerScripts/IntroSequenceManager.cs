@@ -12,6 +12,10 @@ public class IntroSequenceManager : MonoBehaviour
 
     private static readonly int IdleFrontHash = Animator.StringToHash("IdleFront");
     private static readonly int IdleFrontHumanHash = Animator.StringToHash("IdleFrontHuman");
+    private static readonly int IdleGhostFrontStateHash = Animator.StringToHash("Base Layer.Idle_Front");
+    private static readonly int IdleHumanFrontStateHash = Animator.StringToHash("Base Layer.IdleHumanFront");
+    private static readonly int TransformToHumanStateHash = Animator.StringToHash("Base Layer.TransformToHuman");
+    private static readonly int TransformToGhostStateHash = Animator.StringToHash("Base Layer.TransformToGhost");
 
     [Header("References")]
     [SerializeField] private Camera mainCamera;
@@ -93,11 +97,18 @@ public class IntroSequenceManager : MonoBehaviour
     [SerializeField] private float blinkStartX   = -100f;
     [SerializeField] private float blinkEndX     = 0f;
     [SerializeField] private float blinkInterval = 0.5f;
+    [Tooltip("Tiempo en IdleGhost cuando la transformación llega al 100%.")]
+    [SerializeField, Min(0f)] private float fullGhostIdleDuration = 1f;
 
-    [Header("Blink — Human ratio per quarter (1=always human, 0=always soul)")]
+    [Header("Blink — Transformation progress per quarter")]
+    [Tooltip("Avance máximo de la transformación antes de invertirla (1=completa, 0=no empieza).")]
+    [Range(0f, 1f)]
     [SerializeField] private float ratioQ1 = 1.00f;
+    [Range(0f, 1f)]
     [SerializeField] private float ratioQ2 = 0.85f;
+    [Range(0f, 1f)]
     [SerializeField] private float ratioQ3 = 0.50f;
+    [Range(0f, 1f)]
     [SerializeField] private float ratioQ4 = 0.15f;
 
     [Header("Blink — Form Lock")]
@@ -798,29 +809,99 @@ public class IntroSequenceManager : MonoBehaviour
         {
             if (lockHumanForm)
             {
-                SetHumanForm();
+                ForceIntroHumanIdle();
                 yield return null;
                 continue;
             }
 
-            float ratio = GetHumanRatio();
+            float cycleStart = Time.time;
+            float transformationProgress = GetTransformationProgress();
 
-            if (ratio >= 1f)
+            if (transformationProgress > 0f)
             {
-                SetHumanForm();
-                yield return null;
-                continue;
+                yield return PlayIntroTransformation(
+                    TransformToGhostStateHash,
+                    0f,
+                    transformationProgress);
+
+                if (!lockHumanForm && transformationProgress >= 0.999f)
+                    yield return HoldFullGhostIdle();
+
+                if (!lockHumanForm)
+                {
+                    // The clips run in opposite directions. The complementary
+                    // time keeps the visual transformation at the same point.
+                    yield return PlayIntroTransformation(
+                        TransformToHumanStateHash,
+                        1f - transformationProgress,
+                        1f);
+                }
             }
 
-            float humanTime = ratio * blinkInterval;
-            float soulTime  = (1f - ratio) * blinkInterval;
+            ForceIntroHumanIdle();
 
-            SetHumanForm();
-            if (humanTime > 0.01f) yield return new WaitForSeconds(humanTime);
-
-            SetSoulForm();
-            if (soulTime > 0.01f) yield return new WaitForSeconds(soulTime);
+            float remainingInterval = blinkInterval - (Time.time - cycleStart);
+            if (remainingInterval > 0.01f)
+                yield return new WaitForSeconds(remainingInterval);
         }
+    }
+
+    private IEnumerator HoldFullGhostIdle()
+    {
+        if (playerAnimator == null || !playerAnimator.enabled)
+            yield break;
+
+        playerAnimator.Play(IdleGhostFrontStateHash, 0, 0f);
+
+        float elapsed = 0f;
+        while (!lockHumanForm && elapsed < fullGhostIdleDuration)
+        {
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+    }
+
+    private IEnumerator PlayIntroTransformation(
+        int stateHash,
+        float startNormalizedTime,
+        float endNormalizedTime)
+    {
+        if (playerAnimator == null || !playerAnimator.enabled)
+            yield break;
+
+        startNormalizedTime = Mathf.Clamp01(startNormalizedTime);
+        endNormalizedTime = Mathf.Clamp01(endNormalizedTime);
+
+        playerAnimator.Play(stateHash, 0, startNormalizedTime);
+        playerAnimator.Update(0f);
+
+        while (!lockHumanForm &&
+               playerAnimator != null &&
+               playerAnimator.enabled)
+        {
+            AnimatorStateInfo stateInfo =
+                playerAnimator.GetCurrentAnimatorStateInfo(0);
+
+            if (stateInfo.fullPathHash != stateHash ||
+                stateInfo.normalizedTime >= endNormalizedTime)
+            {
+                yield break;
+            }
+
+            yield return null;
+        }
+    }
+
+    private void ForceIntroHumanIdle()
+    {
+        if (playerAnimator == null || !playerAnimator.enabled)
+            return;
+
+        SetHumanForm();
+
+        AnimatorStateInfo stateInfo = playerAnimator.GetCurrentAnimatorStateInfo(0);
+        if (stateInfo.fullPathHash != IdleHumanFrontStateHash)
+            playerAnimator.Play(IdleHumanFrontStateHash, 0, 0f);
     }
 
     private void SetHumanForm()
@@ -837,7 +918,7 @@ public class IntroSequenceManager : MonoBehaviour
         SetPlayerAnimatorBoolIfAvailable(IdleFrontHumanHash, false);
     }
 
-    private float GetHumanRatio()
+    private float GetTransformationProgress()
     {
         float x             = playerTransform.position.x;
         float quarterLength = (blinkEndX - blinkStartX) / 4f;
