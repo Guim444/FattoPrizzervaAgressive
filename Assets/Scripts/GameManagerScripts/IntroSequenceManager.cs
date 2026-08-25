@@ -135,10 +135,7 @@ public class IntroSequenceManager : MonoBehaviour
     private DialogueCameraController dialogueCameraController;
     private DialogueLayoutManager _dialogueLayoutManager;
     private DialogueSceneMenu _dialogueSceneMenu;
-    private Transform _churchPlayerSurroundLight;
-    private bool _churchPlayerSurroundLightWasActive;
     private float _churchPlayerSurroundLightOriginalIntensity;
-    private bool _hasCapturedChurchPlayerLightState;
     private bool _originalPauseAnimatorControl;
     private bool _hasOriginalPauseAnimatorControl;
     private bool _playerFadeMaterialRestored;
@@ -1255,7 +1252,6 @@ public class IntroSequenceManager : MonoBehaviour
 
     private IEnumerator DeactivatePlayerSorroundingLight()
     {
-        _hasCapturedChurchPlayerLightState = true;
         _churchPlayerSurroundLightOriginalIntensity = playerSorroundLight.intensity;
 
         float elapsed = 0f;
