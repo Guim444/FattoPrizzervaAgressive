@@ -126,7 +126,6 @@ public class IntroSequenceManager : MonoBehaviour
     private Coroutine _blinkCoroutine;
     private Coroutine _churchSequenceCoroutine;
     private Coroutine _dialogueReturnCoroutine;
-    private Coroutine _playerSurroundLightFadeCoroutine;
     private CinemachineFramingTransposer _introFramingTransposer;
     private Vector3 _originalIntroTrackedObjectOffset;
     private CameraClearFlags _originalClearFlags;
@@ -1249,17 +1248,13 @@ public class IntroSequenceManager : MonoBehaviour
         if (_dialogueLayoutManager != null)
             _dialogueLayoutManager.EnterChurchLighting();
 
-        if (_playerSurroundLightFadeCoroutine != null)
-            StopCoroutine(_playerSurroundLightFadeCoroutine);
+        if (!playerSorroundLight) return;
 
-        _playerSurroundLightFadeCoroutine =
-            StartCoroutine(DeactivatePlayerSorroundingLight());
+        StartCoroutine(DeactivatePlayerSorroundingLight());
     }
 
     private IEnumerator DeactivatePlayerSorroundingLight()
     {
-        if (!playerSorroundLight) yield break;
-
         _hasCapturedChurchPlayerLightState = true;
         _churchPlayerSurroundLightOriginalIntensity = playerSorroundLight.intensity;
 
