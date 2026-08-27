@@ -153,25 +153,34 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   shots:
   - targetPosition: {fileID: 1380970478}
-    moveDuration: 2
+    moveDuration: 2.3
     moveCurve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
         time: 0
         value: 0
-        inSlope: 1
-        outSlope: 1
-        tangentMode: 34
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
         weightedMode: 0
         inWeight: 0
         outWeight: 0
       - serializedVersion: 3
+        time: 0.61222637
+        value: 0.16497846
+        inSlope: 0.75777185
+        outSlope: 0.75777185
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
         time: 1
         value: 1
-        inSlope: 1
-        outSlope: 1
-        tangentMode: 34
+        inSlope: 2
+        outSlope: 2
+        tangentMode: 0
         weightedMode: 0
         inWeight: 0
         outWeight: 0
@@ -268,18 +277,27 @@ MonoBehaviour:
       - serializedVersion: 3
         time: 0
         value: 0
-        inSlope: 1
-        outSlope: 1
-        tangentMode: 34
+        inSlope: 2
+        outSlope: 2
+        tangentMode: 0
         weightedMode: 0
         inWeight: 0
         outWeight: 0
       - serializedVersion: 3
+        time: 0.75012165
+        value: 0.9451872
+        inSlope: 0.7497487
+        outSlope: 0.7497487
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
         time: 1
         value: 1
-        inSlope: 1
-        outSlope: 1
-        tangentMode: 34
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
         weightedMode: 0
         inWeight: 0
         outWeight: 0
@@ -316,9 +334,9 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
     useShake: 1
-    shakePositionIntensity: 0.1
-    shakeRotationIntensity: 2
-    shakeFrequency: 5
+    shakePositionIntensity: 0.4
+    shakeRotationIntensity: 0.2
+    shakeFrequency: 20
     shakeIntensityCurve:
       serializedVersion: 2
       m_Curve:
@@ -332,8 +350,8 @@ MonoBehaviour:
         inWeight: 0
         outWeight: 0
       - serializedVersion: 3
-        time: 1.0072021
-        value: 0.50157166
+        time: 0.98194623
+        value: 0.07007718
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -347,8 +365,8 @@ MonoBehaviour:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
-        time: 0
-        value: 1
+        time: 0.004201889
+        value: 0.9841614
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -356,8 +374,8 @@ MonoBehaviour:
         inWeight: 0
         outWeight: 0
       - serializedVersion: 3
-        time: 0.9583435
-        value: 0.96047974
+        time: 1.0042114
+        value: 0.24403381
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -835,13 +853,21 @@ PrefabInstance:
       propertyPath: m_Name
       value: CHR_Player
       objectReference: {fileID: 0}
+    - target: {fileID: 1993278659528858592, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2058333521518567832, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2058333521518567832, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: 857fd31268726194e9441f46f1a0475e, type: 2}
     - target: {fileID: 2303475782801046062, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -101.4
+      value: -100.895
       objectReference: {fileID: 0}
     - target: {fileID: 2303475782801046062, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
       propertyPath: m_LocalPosition.y
@@ -849,7 +875,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2303475782801046062, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.34
+      value: -0.495
       objectReference: {fileID: 0}
     - target: {fileID: 2303475782801046062, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
       propertyPath: m_LocalRotation.w
@@ -910,6 +936,10 @@ PrefabInstance:
     - target: {fileID: 4348642207067692730, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
       propertyPath: onDied.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 7686821030642128762, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8518268266261273643, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
       propertyPath: m_Sprite
@@ -6350,6 +6380,7 @@ GameObject:
   - component: {fileID: 436339921387248320}
   - component: {fileID: 8707701574264743903}
   - component: {fileID: 6104135622590270735}
+  - component: {fileID: 8707701574264743904}
   m_Layer: 0
   m_Name: pPlane4
   m_TagString: Untagged
@@ -7050,6 +7081,28 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7915217111691798610}
+  m_Mesh: {fileID: 2272001217198551621, guid: 94676cf29dba3f34199907fab7c20691, type: 3}
+--- !u!64 &8707701574264743904
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7915217111691798610}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
   m_Mesh: {fileID: 2272001217198551621, guid: 94676cf29dba3f34199907fab7c20691, type: 3}
 --- !u!33 &8707701574797434708
 MeshFilter:
