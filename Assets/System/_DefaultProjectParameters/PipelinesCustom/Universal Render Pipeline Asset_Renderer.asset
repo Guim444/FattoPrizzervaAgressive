@@ -247,7 +247,8 @@ MonoBehaviour:
   - {fileID: -1921750276035968850}
   - {fileID: -1368418012885193180}
   - {fileID: -105966346719418444}
-  m_RendererFeatureMap: 4cdbace031c18c8d908feb7af477c316b08bf8454bd4add034f4c05098e44813e221f6e19f4d2c535afbbbf08da92b7dd758bcbbb6144b7b642b61c4c006c4beae00de494e9254e5246ebb45116702edb4a7a4492b8887fe
+  - {fileID: 2114431815306620918}
+  m_RendererFeatureMap: 4cdbace031c18c8d908feb7af477c316b08bf8454bd4add034f4c05098e44813e221f6e19f4d2c535afbbbf08da92b7dd758bcbbb6144b7b642b61c4c006c4beae00de494e9254e5246ebb45116702edb4a7a4492b8887fef6af228588f8571d
   m_UseNativeRenderPass: 0
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
@@ -330,6 +331,24 @@ MonoBehaviour:
   m_Active: 1
   downsampleDepthShader: {fileID: 4800000, guid: cffeaeec0396a2c4dad475266cc8dfeb, type: 3}
   volumetricFogShader: {fileID: 4800000, guid: 08f816187f9af0244a95556ee0cab83f, type: 3}
+--- !u!114 &2114431815306620918
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 473a86c9e274347dfbdde619584cebe9, type: 3}
+  m_Name: HighlightPlusRenderPassFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  renderPassEvent: 500
+  clearStencil: 0
+  previewInEditMode: 1
+  showInSceneView: 1
+  showInPreviewCamera: 0
 --- !u!114 &5993250553209430498
 MonoBehaviour:
   m_ObjectHideFlags: 0
