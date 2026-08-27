@@ -52,9 +52,9 @@ Shader "Unlit/CorrectTransparencyShader"
             {
                 // sample the texture
                 fixed4 col = tex2D(_MainTex, i.uv);
-                if (col.a > _Weight){
-                    col.a = 1;
-                }
+                // if (col.a > _Weight){
+                //     col.a = 1;
+                // }
                 // col.a *= 0.1;
                 // apply fog
                 //UNITY_APPLY_FOG(i.fogCoord, col);

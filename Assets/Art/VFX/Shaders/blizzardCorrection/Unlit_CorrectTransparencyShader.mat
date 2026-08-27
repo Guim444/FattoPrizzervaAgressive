@@ -19,12 +19,12 @@ Material:
   m_CustomRenderQueue: 3005
   stringTagMap: {}
   disabledShaderPasses: []
-  m_LockedProperties: :m_DoubleSidedGI
+  m_LockedProperties: :m_DoubleSidedGI _MainTex
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
     - _MainTex:
-        m_Texture: {fileID: 8400000, guid: 7813d8564064a1043bf6b95b8ba6fcd8, type: 2}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
