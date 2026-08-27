@@ -94,8 +94,8 @@ public class IntroSequenceManager : MonoBehaviour
     [SerializeField] private float introPlayerZ   = 0f;
 
     [Header("Blink — Position")]
-    [SerializeField] private float blinkStartX   = -100f;
-    [SerializeField] private float blinkEndX     = 0f;
+    [Tooltip("Tres marcadores que separan los cuatro tramos del blink. Solo se usa su posición X; el orden del array es indiferente.")]
+    [SerializeField] private Transform[] blinkQuarterMarkers = new Transform[3];
     [SerializeField] private float blinkInterval = 0.5f;
     [Tooltip("Tiempo en IdleGhost cuando la transformación llega al 100%.")]
     [SerializeField, Min(0f)] private float fullGhostIdleDuration = 1f;
@@ -147,6 +147,7 @@ public class IntroSequenceManager : MonoBehaviour
     private float _originalWalkingSpeed;
     private bool _originalCanSprint;
     private bool _hasOriginalIntroControlSettings;
+    private bool _hasWarnedInvalidBlinkQuarterMarkers;
     private readonly Dictionary<int, AnimatorControllerParameterType> _animatorParameterTypes =
         new Dictionary<int, AnimatorControllerParameterType>();
     private readonly List<ParticleSystem> _introBlizzardParticles = new List<ParticleSystem>();
@@ -918,12 +919,38 @@ public class IntroSequenceManager : MonoBehaviour
 
     private float GetTransformationProgress()
     {
-        float x             = playerTransform.position.x;
-        float quarterLength = (blinkEndX - blinkStartX) / 4f;
+        if (blinkQuarterMarkers == null ||
+            blinkQuarterMarkers.Length != 3 ||
+            blinkQuarterMarkers[0] == null ||
+            blinkQuarterMarkers[1] == null ||
+            blinkQuarterMarkers[2] == null)
+        {
+            if (!_hasWarnedInvalidBlinkQuarterMarkers)
+            {
+                Debug.LogWarning(
+                    $"[{nameof(IntroSequenceManager)}] Asigna exactamente tres marcadores para delimitar los cuatro tramos del blink.",
+                    this);
+                _hasWarnedInvalidBlinkQuarterMarkers = true;
+            }
 
-        if (x < blinkStartX + quarterLength)      return ratioQ1;
-        if (x < blinkStartX + quarterLength * 2f) return ratioQ2;
-        if (x < blinkStartX + quarterLength * 3f) return ratioQ3;
+            return ratioQ1;
+        }
+
+        _hasWarnedInvalidBlinkQuarterMarkers = false;
+
+        float boundary1 = blinkQuarterMarkers[0].position.x;
+        float boundary2 = blinkQuarterMarkers[1].position.x;
+        float boundary3 = blinkQuarterMarkers[2].position.x;
+
+        if (boundary1 > boundary2) (boundary1, boundary2) = (boundary2, boundary1);
+        if (boundary2 > boundary3) (boundary2, boundary3) = (boundary3, boundary2);
+        if (boundary1 > boundary2) (boundary1, boundary2) = (boundary2, boundary1);
+
+        float x = playerTransform.position.x;
+
+        if (x < boundary1) return ratioQ1;
+        if (x < boundary2) return ratioQ2;
+        if (x < boundary3) return ratioQ3;
         return ratioQ4;
     }
 
