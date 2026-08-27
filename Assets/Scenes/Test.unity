@@ -219,6 +219,10 @@ PrefabInstance:
       propertyPath: onDied.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 8518268266261273643, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
+      propertyPath: m_Color.a
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8917648843820653840, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
       propertyPath: m_RenderingLayers
       value: 4
