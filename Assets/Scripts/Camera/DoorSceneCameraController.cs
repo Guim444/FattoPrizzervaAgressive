@@ -142,6 +142,22 @@ public class DoorSceneCameraController : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            // 1. Atura la seqüència, el sacseig i torna a la posició inicial
+            StopSequence();
+
+            // 2. Elimina el fos a negre per netejar la pantalla
+            ResetFade();
+
+            // 3. Torna a arrencar tota la seqüència de plans des de l'inici
+            PlaySequence();
+
+            Debug.Log("🔄 Seqüència reiniciada directament des del controlador!");
+        }
+    }
 
     private void LateUpdate()
     {
