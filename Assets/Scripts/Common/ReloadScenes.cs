@@ -59,10 +59,6 @@ public class ReloadScenes : MonoBehaviour
         transform.SetParent(null);
         DontDestroyOnLoad(gameObject);
 
-        // -----------------------------
-        // 1. Recargar MainScene
-        // -----------------------------
-
         yield return SceneManager.LoadSceneAsync(
             mainScenePath,
             LoadSceneMode.Single
@@ -72,10 +68,6 @@ public class ReloadScenes : MonoBehaviour
 
         // Dejamos que Awake / Start de MainScene se ejecuten.
         yield return null;
-
-        // -----------------------------
-        // 2. Recuperar las otras escenas
-        // -----------------------------
 
         foreach (string scenePath in scenesToReload)
         {
@@ -104,12 +96,7 @@ public class ReloadScenes : MonoBehaviour
         // intenta cargar una escena automáticamente.
         yield return null;
 
-        // -----------------------------
-        // 3. Restaurar escena activa
-        // -----------------------------
-
-        Scene activeScene =
-            SceneManager.GetSceneByPath(activeScenePath);
+        Scene activeScene = SceneManager.GetSceneByPath(activeScenePath);
 
         if (activeScene.IsValid() && activeScene.isLoaded)
         {
@@ -119,7 +106,6 @@ public class ReloadScenes : MonoBehaviour
         SceneManager.sceneLoaded -= OnSceneLoaded;
 
         // Destruimos el reloader antiguo.
-        // MainScene ya contiene su copia nueva.
         Destroy(gameObject);
     }
 
@@ -144,8 +130,6 @@ public class ReloadScenes : MonoBehaviour
         if (string.IsNullOrEmpty(scene.path))
             return;
 
-        // Solo nos importan las escenas que existían
-        // cuando pulsamos R.
         if (!targetScenes.Contains(scene.path))
             return;
 
