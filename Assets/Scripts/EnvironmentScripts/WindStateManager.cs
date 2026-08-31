@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Formats.Alembic.Importer;
 using UnityEngine.SceneManagement;
-using UnityEngine.Rendering;
 using UnityEngine.Serialization;
 using UnityEngine.Video;
 
@@ -11,7 +10,7 @@ using UnityEngine.Video;
 ///
 /// Idea clave:
 /// - Cada clip tiene su propio VideoPlayer.
-/// - Los clips se asignan al crear el root, en Awake o al entrar en la iglesia.
+/// - Los VideoPlayers, clips y quads se configuran en escena mediante BlizzardVideoRig.
 /// - Todos los players se preparan una vez y los que no están visibles quedan pausados.
 /// - Al cambiar de estado NO se cambia clip, NO se llama Prepare, NO se llama Stop.
 /// - Tampoco se hace seek/time=0/frame=0 en runtime.
@@ -38,12 +37,6 @@ public class WindStateManager : MonoBehaviour
     [System.Serializable]
     public struct WindStateData
     {
-        [Tooltip("Clip de transición (se reproduce visualmente una vez). Dejar vacío en W1.")]
-        public VideoClip transitionClip;
-
-        [Tooltip("Clip idle que se reproduce en loop tras la transición (o directamente en W1).")]
-        public VideoClip idleLoopClip;
-
         [Range(0f, 1f)]
         [Tooltip("Opacidad del vídeo sobre la cámara durante la transición.")]
         public float transitionOpacity;
@@ -94,11 +87,8 @@ public class WindStateManager : MonoBehaviour
     [SerializeField, Min(0f)] private float plantaMjPlaybackSpeed = 1f;
 
     [Header("Preload / Playback")]
-    [Tooltip("Crea el root y sus VideoPlayers en Awake. Si se desactiva, se crean al entrar en la iglesia.")]
+    [Tooltip("Enlaza y prepara en Awake los VideoPlayers colocados en escena.")]
     [SerializeField] private bool preloadPlayersOnAwake = true;
-
-    [Tooltip("Nombre del contenedor runtime donde se crean los VideoPlayers.")]
-    [SerializeField] private string videoPlayersRootName = "Runtime_VideoPlayers";
 
     [Tooltip("Si está desactivado, los vídeos permanecen inactivos hasta entrar en la iglesia.")]
     [SerializeField] private bool videoPlayersRootStartsActive = false;
@@ -106,66 +96,18 @@ public class WindStateManager : MonoBehaviour
     [Tooltip("Prepara los VideoPlayers ocultos para evitar tirones al mostrarlos. Solo el video visible se reproduce.")]
     [SerializeField] private bool prewarmPlayersWhileHidden = true;
 
-    [Header("Video Surface")]
-    [Tooltip("0 usa la resolucion del clip. Usar un valor fijo solo si todos los videos comparten formato.")]
-    [SerializeField, Min(0)] private int renderTextureWidth = 0;
-    [Tooltip("0 usa la resolucion del clip. Usar un valor fijo solo si todos los videos comparten formato.")]
-    [SerializeField, Min(0)] private int renderTextureHeight = 0;
-    [Tooltip("Ancho en unidades de mundo del plano cercano de ventisca.")]
-    [SerializeField, Min(0.01f)] private float cameraSurfaceWidth = 220f;
-    [Tooltip("Alto en unidades de mundo del plano cercano de ventisca.")]
-    [SerializeField, Min(0.01f)] private float cameraSurfaceHeight = 140f;
-    [Tooltip("Profundidad/distancia local desde la camara del plano cercano.")]
-    [SerializeField, Min(0.01f)] private float cameraSurfaceDepth = 18f;
-    [Tooltip("Offset local del plano cercano. Y negativo baja la ventisca en pantalla.")]
-    [SerializeField] private Vector2 cameraSurfaceLocalOffset = Vector2.zero;
-    [Tooltip("Mantiene las capas de ventisca pegadas a pantalla para evitar parallax al cambiar de dentro/fuera.")]
-    [SerializeField] private bool stabilizeBlizzardSurfaceOnScreen = true;
-    [Tooltip("Mantiene fija la posicion Z de la ventisca aunque la camara se desplace lateralmente en Z.")]
-    [SerializeField] private bool lockBlizzardSurfaceWorldZ = false;
-
-    [Header("Video Surface - Background Copy")]
-    [Tooltip("Distancia extra desde la ventisca cercana hasta su copia de fondo. Bajarlo acerca la copia al plano cercano.")]
-    [SerializeField, Min(0.01f)] private float backgroundCopyDistanceFromNearBlizzard = 12f;
-
-    [Tooltip("Compensa el movimiento horizontal de la camara desplazando las UVs del video. 0 = pegado a pantalla, 1 = mayor sensacion de mundo.")]
-    [SerializeField, Range(0f, 1f)] private float horizontalMotionCompensation = 0.35f;
-    [Tooltip("Cuantos metros horizontales de camara equivalen a una repeticion completa del video.")]
-    [SerializeField, Min(0.01f)] private float horizontalWorldUnitsPerTextureRepeat = 24f;
-    [Tooltip("Rendering Layer Mask del quad de ventisca. Todos=4294967295, Default=1, Light Layer 1=2, Light Layer 2=4.")]
-    [SerializeField] private uint blizzardRenderingLayerMask = uint.MaxValue;
-
-    [Header("Video Surface - Idle Background Copy")]
-    [SerializeField] private bool enableIdleBackgroundLayer = true;
-    [Tooltip("Ancla la capa grande al mundo cuando se hace visible. Si se desactiva, vuelve a seguir a la camara.")]
-    [SerializeField] private bool idleBackgroundAnchoredToWorld = true;
-    [SerializeField, Min(0.01f)] private float idleBackgroundWidth = 160f;
-    [SerializeField, Min(0.01f)] private float idleBackgroundHeight = 90f;
-    [SerializeField, Min(0.01f)] private float idleBackgroundDepth = 80f;
-    [SerializeField] private Vector2 idleBackgroundOffset = Vector2.zero;
-    [Tooltip("Repeticiones del video sobre la capa grande para evitar que la ventisca se estire.")]
-    [SerializeField] private Vector2 idleBackgroundUvTiling = new Vector2(4f, 3f);
-    [SerializeField, Range(0f, 1f)] private float idleBackgroundOpacityMultiplier = 0.35f;
-    [SerializeField, Range(0f, 1f)] private float idleBackgroundHorizontalMotionCompensation = 0.12f;
-
-    [Header("Compatibilidad")]
-    [SerializeField, HideInInspector] private VideoClip blizzardVideoClip;
-    [SerializeField, HideInInspector] private VideoPlayer blizzardVideoPlayer;
-
     // ── Estado interno ────────────────────────────────────────────────────────
 
     private int  _currentStateIndex = -1;
-    private bool _cameraWasAssigned;
     private bool _missingCameraWarningShown;
 
+    private BlizzardVideoRig _videoRig;
     private Transform _playersRoot;
     private VideoPlayer[] _idlePlayers;
     private VideoPlayer[] _transitionPlayers;
     private readonly List<VideoPlayer> _allPlayers = new List<VideoPlayer>();
     private readonly HashSet<VideoPlayer> _prepareRequestedPlayers = new HashSet<VideoPlayer>();
-    private readonly Dictionary<VideoPlayer, VideoSurface> _videoSurfaces = new Dictionary<VideoPlayer, VideoSurface>();
-    private readonly Dictionary<VideoPlayer, VideoSurface> _cameraBackgroundSurfaces = new Dictionary<VideoPlayer, VideoSurface>();
-    private readonly Dictionary<VideoPlayer, VideoSurface> _idleBackgroundSurfaces = new Dictionary<VideoPlayer, VideoSurface>();
+    private bool _missingVideoRigWarningShown;
 
     private int   _activeIdleIndex       = -1;
     private int   _activeTransitionIndex = -1;
@@ -177,12 +119,6 @@ public class WindStateManager : MonoBehaviour
     private bool _videoOpacityFadeActive;
     private float _videoOpacityFadeStartedAt;
     private float _videoOpacityFadeDuration;
-    private bool  _hasHorizontalMotionReference;
-    private float _horizontalMotionReferenceX;
-    private Camera _horizontalMotionReferenceCamera;
-    private bool _hasBlizzardSurfaceWorldZAnchor;
-    private float _blizzardSurfaceWorldZAnchor;
-    private Camera _blizzardSurfaceWorldZAnchorCamera;
     private readonly List<AlembicStreamPlayer> _plantaMjPlayers = new List<AlembicStreamPlayer>();
     private readonly List<float> _plantaMjTimes = new List<float>();
     private readonly List<Renderer[]> _plantaMjRenderers = new List<Renderer[]>();
@@ -201,44 +137,20 @@ public class WindStateManager : MonoBehaviour
     private float _vatWindBlend = 1f;
     private float _vatWindBlendTarget = 1f;
 
-    private sealed class VideoSurface
-    {
-        public GameObject quad;
-        public MeshRenderer renderer;
-        public Mesh mesh;
-        public Material material;
-        public RenderTexture texture;
-        public bool ownsTexture;
-        public bool usesCameraSurfaceSettings;
-        public bool usesCameraBackgroundSettings;
-        public bool usesFixedCameraPlane;
-        public bool usesWorldPlane;
-        public bool worldPoseInitialized;
-        public float fixedWidth;
-        public float fixedHeight;
-        public float fixedDepth;
-        public Vector2 fixedOffset;
-        public Vector2 uvTiling = Vector2.one;
-        public float horizontalMotionCompensation;
-        public float alpha;
-        public Vector3 worldCenter;
-        public Quaternion worldRotation = Quaternion.identity;
-        public readonly Vector3[] vertices = new Vector3[4];
-        public readonly Vector2[] uvs = new Vector2[4];
-    }
-
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
     private void Awake()
     {
-        _cameraWasAssigned = blizzardVideoCamera != null;
         Shader.SetGlobalFloat(VatWindBlendId, _vatWindBlend);
+
+        BlizzardVideoRig.RigAvailable += HandleVideoRigAvailable;
+        BlizzardVideoRig.RigUnavailable += HandleVideoRigUnavailable;
 
         ResolvePlantaMjAlembicPlayers();
         UseInitialWalkAlembicDistance();
 
         if (preloadPlayersOnAwake)
-            BuildAndPrepareFixedPlayers();
+            EnsureVideoRig();
 
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
@@ -254,6 +166,8 @@ public class WindStateManager : MonoBehaviour
     private void OnDestroy()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
+        BlizzardVideoRig.RigAvailable -= HandleVideoRigAvailable;
+        BlizzardVideoRig.RigUnavailable -= HandleVideoRigUnavailable;
         UnsubscribeAll();
         HideAllVideos();
         // No llamamos Stop() durante cambios de estado.
@@ -262,6 +176,9 @@ public class WindStateManager : MonoBehaviour
 
     private void Update()
     {
+        if (_videoRig == null && preloadPlayersOnAwake)
+            EnsureVideoRig(logWarning: false);
+
         RefreshVideoCamera();
         UpdateTransitionTimer();
         UpdateAlembicDistanceTransition();
@@ -274,21 +191,6 @@ public class WindStateManager : MonoBehaviour
         MaintainActiveVideoAlpha();
 
         AdvancePlantaMjAlembicPlayers();
-    }
-
-    private void LateUpdate()
-    {
-        UpdateVideoSurfaces();
-    }
-
-    private void OnEnable()
-    {
-        Camera.onPreCull += HandleCameraPreCull;
-    }
-
-    private void OnDisable()
-    {
-        Camera.onPreCull -= HandleCameraPreCull;
     }
 
     // ── API pública ────────────────────────────────────────────────────────────
@@ -309,7 +211,6 @@ public class WindStateManager : MonoBehaviour
         _activeTransitionOpacity = 0f;
 
         SetVegetationWindState(preset);
-        ResetHorizontalMotionReference();
 
         ShowIdle(idx);
     }
@@ -334,17 +235,14 @@ public class WindStateManager : MonoBehaviour
         _currentStateIndex = idx;
 
         SetVegetationWindState(preset);
-        ResetHorizontalMotionReference();
 
-        WindStateData data = windStates[idx];
         VideoPlayer transition = GetTransitionPlayer(idx);
 
-        // W1 es siempre idle directo. Aunque por accidente tenga transitionClip en el Inspector,
-        // el estado inicial no debe mostrar transición.
+        // W1 es siempre idle directo aunque el rig tenga por accidente una transición asignada.
         bool isInitialIdleState = idx == (int)WindPreset.W1_MaxIdle;
 
         // Si no hay transición asignada, o es W1, ir directo al idle.
-        if (isInitialIdleState || data.transitionClip == null || transition == null)
+        if (isInitialIdleState || !HasVideoSource(transition))
         {
             ShowIdle(idx);
             return;
@@ -433,21 +331,15 @@ public class WindStateManager : MonoBehaviour
 
     public void ActivateVideoPlayersRoot()
     {
-        if (_playersRoot == null)
-            BuildAndPrepareFixedPlayers();
-
-        if (_playersRoot == null)
+        if (!EnsureVideoRig())
         {
-            Debug.LogWarning($"[{nameof(WindStateManager)}] No existe el root de VideoPlayers.", this);
+            Debug.LogWarning($"[{nameof(WindStateManager)}] No existe un BlizzardVideoRig configurado.", this);
             return;
         }
 
-        _playersRoot.gameObject.SetActive(true);
+        _videoRig.SetPlayersRootActive(true);
         _videoPlayersVisible = true;
         RefreshVideoCamera();
-        ResetHorizontalMotionReference();
-        ResetBlizzardSurfaceWorldZAnchor();
-        ResetWorldBackgroundAnchors();
 
         if (!_blizzardVideoPlaybackEnabled)
         {
@@ -458,8 +350,6 @@ public class WindStateManager : MonoBehaviour
 
         PrepareAllFixedPlayers();
         PlayOnlyActiveFixedPlayer(requestPrepareIfNeeded: true);
-
-        ActivateLegacyVideoPlayer();
         ApplyCurrentVideoAlphas();
     }
 
@@ -530,17 +420,12 @@ public class WindStateManager : MonoBehaviour
     {
         bool wasVisible = _videoPlayersVisible;
 
-        if (_playersRoot == null)
-            BuildAndPrepareFixedPlayers();
-
-        if (_playersRoot == null)
+        if (!EnsureVideoRig())
             return;
 
-        _playersRoot.gameObject.SetActive(true);
+        _videoRig.SetPlayersRootActive(true);
         _videoPlayersVisible = false;
         RefreshVideoCamera();
-        ResetHorizontalMotionReference();
-        ResetBlizzardSurfaceWorldZAnchor();
 
         if (!_blizzardVideoPlaybackEnabled)
         {
@@ -584,8 +469,8 @@ public class WindStateManager : MonoBehaviour
             return;
         }
 
-        if (_playersRoot == null && preloadPlayersOnAwake)
-            BuildAndPrepareFixedPlayers();
+        if (_videoRig == null && preloadPlayersOnAwake)
+            EnsureVideoRig();
 
         if (_playersRoot == null || !_videoPlayersVisible)
         {
@@ -593,112 +478,117 @@ public class WindStateManager : MonoBehaviour
             return;
         }
 
-        _playersRoot.gameObject.SetActive(true);
+        _videoRig.SetPlayersRootActive(true);
         PrepareAllFixedPlayers();
         PlayOnlyActiveFixedPlayer(requestPrepareIfNeeded: true);
-        ActivateLegacyVideoPlayer();
         ApplyCurrentVideoAlphas();
     }
 
     // ── Preload de VideoPlayers fijos ─────────────────────────────────────────
 
-    private void BuildAndPrepareFixedPlayers()
+    private bool EnsureVideoRig(bool logWarning = true)
     {
-        if (windStates == null || windStates.Length == 0)
+        if (_videoRig != null && _playersRoot != null)
+            return true;
+
+        BlizzardVideoRig rig = BlizzardVideoRig.ActiveRig;
+        if (rig == null)
         {
-            Debug.LogWarning($"[{nameof(WindStateManager)}] No hay windStates configurados.", this);
+            rig = Object.FindFirstObjectByType<BlizzardVideoRig>(FindObjectsInactive.Include);
+        }
+
+        if (rig == null)
+        {
+            if (logWarning && !_missingVideoRigWarningShown)
+            {
+                _missingVideoRigWarningShown = true;
+                Debug.LogWarning(
+                    $"[{nameof(WindStateManager)}] No se encontró BlizzardVideoRig. " +
+                    "Añádelo a CAM_Player y asigna su Players Root.",
+                    this);
+            }
+
+            return false;
+        }
+
+        BindVideoRig(rig);
+        return _videoRig != null && _playersRoot != null;
+    }
+
+    private void BindVideoRig(BlizzardVideoRig rig)
+    {
+        if (rig == null)
+            return;
+
+        UnsubscribeAll();
+        _allPlayers.Clear();
+        _videoRig = rig;
+        _playersRoot = rig.PlayersRoot != null ? rig.PlayersRoot.transform : null;
+        _missingVideoRigWarningShown = false;
+
+        if (_playersRoot == null || rig.PlayersRoot == rig.gameObject)
+        {
+            _playersRoot = null;
+            Debug.LogWarning(
+                $"[{nameof(WindStateManager)}] BlizzardVideoRig necesita un Players Root hijo y distinto del objeto del rig.",
+                rig);
             return;
         }
 
-        UnsubscribeAll();
-        ClearRuntimePlayers();
+        int stateCount = windStates?.Length ?? 0;
+        _idlePlayers = new VideoPlayer[stateCount];
+        _transitionPlayers = new VideoPlayer[stateCount];
 
-        _idlePlayers = new VideoPlayer[windStates.Length];
-        _transitionPlayers = new VideoPlayer[windStates.Length];
-        _allPlayers.Clear();
-        _cameraBackgroundSurfaces.Clear();
-        _idleBackgroundSurfaces.Clear();
-
-        _playersRoot = GetOrCreatePlayersRoot();
         _videoPlayersVisible = videoPlayersRootStartsActive;
-        _playersRoot.gameObject.SetActive(videoPlayersRootStartsActive || prewarmPlayersWhileHidden);
+        rig.SetPlayersRootActive(videoPlayersRootStartsActive || prewarmPlayersWhileHidden);
 
-        for (int i = 0; i < windStates.Length; i++)
+        for (int i = 0; i < stateCount; i++)
         {
-            WindStateData data = windStates[i];
-            VideoClip idleClip = GetConfiguredIdleClip(i);
-
-            if (idleClip != null)
-            {
-                _idlePlayers[i] = CreateFixedPlayer(
-                    $"VP_Idle_{i}_{SanitizeName(idleClip.name)}",
-                    idleClip,
-                    loop: true,
-                    createIdleBackgroundLayer: true
-                );
-            }
-
-            if (data.transitionClip != null)
-            {
-                // Se prepara al cargar y solo se reproduce mientras esta transición es visible.
-                // Visualmente se muestra una sola pasada gracias al timer.
-                _transitionPlayers[i] = CreateFixedPlayer(
-                    $"VP_Transition_{i}_{SanitizeName(data.transitionClip.name)}",
-                    data.transitionClip,
-                    loop: true,
-                    createIdleBackgroundLayer: false
-                );
-            }
+            _idlePlayers[i] = rig.GetIdlePlayer(i);
+            _transitionPlayers[i] = rig.GetTransitionPlayer(i);
+            RegisterScenePlayer(_idlePlayers[i]);
+            RegisterScenePlayer(_transitionPlayers[i]);
         }
-    }
 
-    private VideoPlayer CreateFixedPlayer(string playerName, VideoClip clip, bool loop, bool createIdleBackgroundLayer)
-    {
-        GameObject go = new GameObject(playerName);
-        go.transform.SetParent(_playersRoot, false);
-
-        VideoPlayer vp = go.AddComponent<VideoPlayer>();
-        ConfigureBasePlayer(vp);
-
-        vp.clip = clip;
-        vp.isLooping = loop;
-        CreateVideoSurface(vp, playerName, clip, createIdleBackgroundLayer);
-        SetVideoOpacity(vp, 0f);
-
-        vp.prepareCompleted += OnFixedPlayerPrepared;
-        vp.errorReceived += OnVideoError;
-
-        AssignCameraToPlayer(vp);
+        rig.HideAllSurfaces();
 
         if (CanRunVideoPlayers)
-            RequestPrepare(vp);
+            PrepareAllFixedPlayers();
 
-        _allPlayers.Add(vp);
-        return vp;
+        ApplyCurrentVideoAlphas();
+        PlayOnlyActiveFixedPlayer(requestPrepareIfNeeded: true);
     }
 
-    private Transform GetOrCreatePlayersRoot()
+    private void RegisterScenePlayer(VideoPlayer player)
     {
-        Transform existing = transform.Find(videoPlayersRootName);
-        if (existing != null)
-            return existing;
+        if (player == null || _allPlayers.Contains(player))
+            return;
 
-        GameObject go = new GameObject(videoPlayersRootName);
-        go.transform.SetParent(transform, false);
-        return go.transform;
+        ConfigureBasePlayer(player);
+        player.prepareCompleted -= OnFixedPlayerPrepared;
+        player.errorReceived -= OnVideoError;
+        player.prepareCompleted += OnFixedPlayerPrepared;
+        player.errorReceived += OnVideoError;
+        _allPlayers.Add(player);
     }
 
-    private void ClearRuntimePlayers()
+    private void HandleVideoRigAvailable(BlizzardVideoRig rig)
     {
-        ReleaseVideoSurfaces();
+        if (_videoRig == null || _videoRig == rig)
+            BindVideoRig(rig);
+    }
 
-        Transform root = transform.Find(videoPlayersRootName);
-        if (root == null) return;
+    private void HandleVideoRigUnavailable(BlizzardVideoRig rig)
+    {
+        if (_videoRig != rig)
+            return;
 
-        if (Application.isPlaying)
-            Destroy(root.gameObject);
-        else
-            DestroyImmediate(root.gameObject);
+        UnsubscribeAll();
+        _allPlayers.Clear();
+        _idlePlayers = null;
+        _transitionPlayers = null;
+        _playersRoot = null;
+        _videoRig = null;
     }
 
     private void OnFixedPlayerPrepared(VideoPlayer source)
@@ -719,7 +609,7 @@ public class WindStateManager : MonoBehaviour
         VideoPlayer idle = GetIdlePlayer(stateIdx);
         if (idle == null)
         {
-            Debug.LogWarning($"[{nameof(WindStateManager)}] Estado {stateIdx} no tiene idleLoopClip/VideoPlayer asignado.", this);
+            Debug.LogWarning($"[{nameof(WindStateManager)}] W{stateIdx + 1} no tiene VideoPlayer idle asignado en BlizzardVideoRig.", this);
             return;
         }
 
@@ -751,14 +641,13 @@ public class WindStateManager : MonoBehaviour
             VideoPlayer player = _allPlayers[i];
             if (player == null) continue;
 
-            AssignCameraToPlayer(player);
             RequestPrepare(player);
         }
     }
 
     private void RequestPrepare(VideoPlayer player)
     {
-        if (player == null || player.isPrepared || _prepareRequestedPlayers.Contains(player))
+        if (!HasVideoSource(player) || player.isPrepared || _prepareRequestedPlayers.Contains(player))
             return;
 
         _prepareRequestedPlayers.Add(player);
@@ -793,8 +682,6 @@ public class WindStateManager : MonoBehaviour
                 continue;
             }
 
-            AssignCameraToPlayer(player);
-
             if (player.isPrepared)
             {
                 if (!player.isPlaying)
@@ -816,13 +703,6 @@ public class WindStateManager : MonoBehaviour
                 player.Pause();
         }
 
-        if (blizzardVideoPlayer != null)
-        {
-            blizzardVideoPlayer.targetCameraAlpha = 0f;
-
-            if (blizzardVideoPlayer.isPlaying)
-                blizzardVideoPlayer.Pause();
-        }
     }
 
     private void ApplyCurrentVideoAlphas()
@@ -859,8 +739,6 @@ public class WindStateManager : MonoBehaviour
     {
         if (!CanRunVideoPlayers)
             return;
-
-        MaintainLegacyVideoPlayer();
 
         if (_activeTransitionIndex >= 0)
         {
@@ -929,38 +807,6 @@ public class WindStateManager : MonoBehaviour
         }
     }
 
-    private void ActivateLegacyVideoPlayer()
-    {
-        if (blizzardVideoPlayer == null || _allPlayers.Count > 0) return;
-
-        ConfigureBasePlayer(blizzardVideoPlayer);
-
-        if (blizzardVideoPlayer.clip == null && blizzardVideoClip != null)
-            blizzardVideoPlayer.clip = blizzardVideoClip;
-
-        if (blizzardVideoPlayer.clip == null) return;
-
-        if (blizzardVideoPlayer.isPrepared)
-            blizzardVideoPlayer.Play();
-        else
-            blizzardVideoPlayer.Prepare();
-
-        MaintainLegacyVideoPlayer();
-    }
-
-    private void MaintainLegacyVideoPlayer()
-    {
-        if (blizzardVideoPlayer == null || _allPlayers.Count > 0) return;
-
-        int stateIdx = _activeIdleIndex >= 0 ? _activeIdleIndex : 0;
-        blizzardVideoPlayer.targetCameraAlpha = ShouldShowVideos
-            ? GetIdleOpacity(stateIdx) * _videoOpacityMultiplier
-            : 0f;
-
-        if (CanRunVideoPlayers && blizzardVideoPlayer.clip != null && blizzardVideoPlayer.isPrepared && !blizzardVideoPlayer.isPlaying)
-            blizzardVideoPlayer.Play();
-    }
-
     private void UpdateTransitionTimer()
     {
         if (_activeTransitionIndex < 0 || _transitionEndsAtUnscaled < 0f)
@@ -1006,14 +852,6 @@ public class WindStateManager : MonoBehaviour
         return _idlePlayers[stateIdx];
     }
 
-    private VideoClip GetConfiguredIdleClip(int stateIdx)
-    {
-        if (!IsValidStateIndex(stateIdx)) return null;
-
-        VideoClip clip = windStates[stateIdx].idleLoopClip;
-        return clip != null ? clip : blizzardVideoClip;
-    }
-
     private float GetIdleOpacity(int stateIdx)
     {
         if (!IsValidStateIndex(stateIdx)) return 0f;
@@ -1045,7 +883,7 @@ public class WindStateManager : MonoBehaviour
     }
 
     private bool CanRunVideoPlayers =>
-        _blizzardVideoPlaybackEnabled && _playersRoot != null && _playersRoot.gameObject.activeInHierarchy;
+        _blizzardVideoPlaybackEnabled && _videoRig != null && _videoRig.IsPlayersRootActive;
 
     private bool ShouldShowVideos =>
         CanRunVideoPlayers && _videoPlayersVisible;
@@ -1083,37 +921,7 @@ public class WindStateManager : MonoBehaviour
         player.skipOnDrop        = true;
         player.audioOutputMode   = VideoAudioOutputMode.None;
         player.timeUpdateMode    = VideoTimeUpdateMode.UnscaledGameTime;
-        player.renderMode        = VideoRenderMode.RenderTexture;
-        player.aspectRatio       = VideoAspectRatio.FitOutside;
-        player.playbackSpeed     = 1f;
-
-        AssignCameraToPlayer(player);
-    }
-
-    private void AssignCameraToPlayer(VideoPlayer player)
-    {
-        if (player == null) return;
-
-        Camera cam = _cameraWasAssigned ? blizzardVideoCamera : ResolveCamera();
-        if (cam == null)
-        {
-            WarnMissingCamera();
-            return;
-        }
-
-        blizzardVideoCamera = cam;
-        player.targetCamera = cam;
-        _missingCameraWarningShown = false;
-    }
-
-    private void AssignCameraToAllPlayers()
-    {
-        for (int i = 0; i < _allPlayers.Count; i++)
-        {
-            VideoPlayer player = _allPlayers[i];
-            if (player != null)
-                AssignCameraToPlayer(player);
-        }
+        player.isLooping         = true;
     }
 
     // ── Cámara ────────────────────────────────────────────────────────────────
@@ -1127,7 +935,6 @@ public class WindStateManager : MonoBehaviour
             Camera resolved = ResolveCamera();
             if (resolved == null)
             {
-                HideAllVideos();
                 WarnMissingCamera();
                 return;
             }
@@ -1136,12 +943,6 @@ public class WindStateManager : MonoBehaviour
             _missingCameraWarningShown = false;
         }
 
-        for (int i = 0; i < _allPlayers.Count; i++)
-        {
-            VideoPlayer player = _allPlayers[i];
-            if (player != null && player.targetCamera != blizzardVideoCamera)
-                player.targetCamera = blizzardVideoCamera;
-        }
     }
 
     private Camera ResolveCamera()
@@ -1166,7 +967,7 @@ public class WindStateManager : MonoBehaviour
     {
         if (_missingCameraWarningShown) return;
         _missingCameraWarningShown = true;
-        Debug.LogWarning($"[{nameof(WindStateManager)}] No se encontró una cámara activa válida para reproducir el vídeo.", this);
+        Debug.LogWarning($"[{nameof(WindStateManager)}] No se encontró una cámara activa válida para el culling de vegetación.", this);
     }
 
     // ── Scene reload ──────────────────────────────────────────────────────────
@@ -1182,540 +983,23 @@ public class WindStateManager : MonoBehaviour
                     : initialWalkAlembicDistance);
         }
         _nextAlembicVisibilityCheck = 0f;
-        AssignCameraToAllPlayers();
-        ResetBlizzardSurfaceWorldZAnchor();
-        ResetWorldBackgroundAnchors();
+        EnsureVideoRig(logWarning: false);
     }
 
-    // ── Superficie de vídeo ───────────────────────────────────────────────────
-
-    private void CreateVideoSurface(VideoPlayer player, string playerName, VideoClip clip, bool createIdleBackgroundLayer)
-    {
-        if (player == null) return;
-
-        int width = renderTextureWidth > 0 ? renderTextureWidth : GetClipWidthSafe(clip);
-        int height = renderTextureHeight > 0 ? renderTextureHeight : GetClipHeightSafe(clip);
-
-        RenderTexture texture = new RenderTexture(width, height, 0, RenderTextureFormat.ARGB32)
-        {
-            name = $"{playerName}_RT",
-            useMipMap = false,
-            autoGenerateMips = false
-        };
-        texture.wrapMode = TextureWrapMode.Repeat;
-        texture.filterMode = FilterMode.Bilinear;
-        texture.Create();
-
-        player.renderMode = VideoRenderMode.RenderTexture;
-        player.targetTexture = texture;
-
-        VideoSurface foreground = CreateVideoSurfaceQuad(
-            player.transform,
-            $"{playerName}_Quad",
-            $"{playerName}_Mesh",
-            $"{playerName}_Material",
-            texture);
-
-        if (foreground == null)
-        {
-            texture.Release();
-            Destroy(texture);
-            return;
-        }
-
-        foreground.texture = texture;
-        foreground.ownsTexture = true;
-        foreground.usesCameraSurfaceSettings = true;
-        ApplyCameraSurfaceSettings(foreground);
-        _videoSurfaces[player] = foreground;
-
-        VideoSurface cameraBackground = CreateVideoSurfaceQuad(
-            player.transform,
-            $"{playerName}_CameraBackgroundQuad",
-            $"{playerName}_CameraBackgroundMesh",
-            $"{playerName}_CameraBackgroundMaterial",
-            texture);
-
-        if (cameraBackground != null)
-        {
-            cameraBackground.texture = texture;
-            cameraBackground.ownsTexture = false;
-            cameraBackground.usesCameraSurfaceSettings = true;
-            cameraBackground.usesCameraBackgroundSettings = true;
-            ApplyCameraSurfaceSettings(cameraBackground);
-            if (cameraBackground.material != null)
-                cameraBackground.material.renderQueue = (int)RenderQueue.Transparent + 5;
-            _cameraBackgroundSurfaces[player] = cameraBackground;
-        }
-
-        if (!createIdleBackgroundLayer || !enableIdleBackgroundLayer)
-            return;
-
-        VideoSurface background = CreateVideoSurfaceQuad(
-            player.transform,
-            $"{playerName}_BackgroundQuad",
-            $"{playerName}_BackgroundMesh",
-            $"{playerName}_BackgroundMaterial",
-            texture);
-
-        if (background == null)
-            return;
-
-        background.texture = texture;
-        background.ownsTexture = false;
-        background.usesFixedCameraPlane = true;
-        background.usesWorldPlane = idleBackgroundAnchoredToWorld && !stabilizeBlizzardSurfaceOnScreen;
-        background.fixedWidth = idleBackgroundWidth;
-        background.fixedHeight = idleBackgroundHeight;
-        background.fixedDepth = idleBackgroundDepth;
-        background.fixedOffset = idleBackgroundOffset;
-        background.uvTiling = ClampUvTiling(idleBackgroundUvTiling);
-        background.horizontalMotionCompensation = stabilizeBlizzardSurfaceOnScreen
-            ? 0f
-            : idleBackgroundHorizontalMotionCompensation;
-        if (background.material != null)
-            background.material.renderQueue = (int)RenderQueue.Transparent + 5;
-        _idleBackgroundSurfaces[player] = background;
-    }
-
-    private VideoSurface CreateVideoSurfaceQuad(Transform parent, string objectName, string meshName, string materialName, Texture texture)
-    {
-        Shader surfaceShader = ResolveVideoSurfaceShader();
-        if (surfaceShader == null)
-        {
-            Debug.LogWarning($"[{nameof(WindStateManager)}] No se encontro un shader compatible para mostrar la ventisca en un quad.", this);
-            return null;
-        }
-
-        GameObject quad = new GameObject(objectName);
-        quad.transform.SetParent(parent, false);
-
-        MeshFilter meshFilter = quad.AddComponent<MeshFilter>();
-        MeshRenderer renderer = quad.AddComponent<MeshRenderer>();
-        Mesh mesh = CreateVideoSurfaceMesh(meshName);
-        meshFilter.sharedMesh = mesh;
-
-        renderer.shadowCastingMode = ShadowCastingMode.Off;
-        renderer.receiveShadows = false;
-        renderer.lightProbeUsage = LightProbeUsage.Off;
-        renderer.reflectionProbeUsage = ReflectionProbeUsage.Off;
-        renderer.renderingLayerMask = blizzardRenderingLayerMask;
-
-        Material material = new Material(surfaceShader)
-        {
-            name = materialName,
-            renderQueue = (int)RenderQueue.Transparent + 10
-        };
-
-        ConfigureVideoSurfaceMaterial(material, texture);
-        renderer.sharedMaterial = material;
-
-        return new VideoSurface
-        {
-            quad = quad,
-            renderer = renderer,
-            mesh = mesh,
-            material = material
-        };
-    }
-
-    private Mesh CreateVideoSurfaceMesh(string playerName)
-    {
-        Mesh mesh = new Mesh
-        {
-            name = $"{playerName}_Mesh"
-        };
-
-        mesh.vertices = new[]
-        {
-            Vector3.zero,
-            Vector3.up,
-            Vector3.one,
-            Vector3.right
-        };
-        mesh.uv = new[]
-        {
-            new Vector2(0f, 0f),
-            new Vector2(0f, 1f),
-            new Vector2(1f, 1f),
-            new Vector2(1f, 0f)
-        };
-        mesh.triangles = new[] { 0, 1, 2, 0, 2, 3 };
-        mesh.RecalculateBounds();
-        return mesh;
-    }
-
-    private Shader ResolveVideoSurfaceShader()
-    {
-        Shader shader = Shader.Find("Universal Render Pipeline/Unlit");
-        if (shader != null) return shader;
-
-        shader = Shader.Find("Unlit/Transparent");
-        if (shader != null) return shader;
-
-        return Shader.Find("Sprites/Default");
-    }
-
-    private void ConfigureVideoSurfaceMaterial(Material material, Texture texture)
-    {
-        if (material == null) return;
-
-        SetMaterialTexture(material, "_BaseMap", texture);
-        SetMaterialTexture(material, "_MainTex", texture);
-
-        if (material.HasProperty("_Surface")) material.SetFloat("_Surface", 1f);
-        if (material.HasProperty("_Blend")) material.SetFloat("_Blend", 0f);
-        if (material.HasProperty("_ZWrite")) material.SetFloat("_ZWrite", 0f);
-        if (material.HasProperty("_SrcBlend")) material.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
-        if (material.HasProperty("_DstBlend")) material.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
-        if (material.HasProperty("_Cull")) material.SetFloat("_Cull", (float)CullMode.Off);
-        if (material.HasProperty("_ZTest")) material.SetFloat("_ZTest", (float)CompareFunction.Always);
-
-        material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-        material.DisableKeyword("_ALPHATEST_ON");
-        SetSurfaceMaterialAlpha(material, 0f);
-    }
+    // ── Superficies colocadas en escena ────────────────────────────────────────
 
     private void SetVideoOpacity(VideoPlayer player, float opacity)
     {
-        if (player == null) return;
+        if (player == null || _videoRig == null)
+            return;
 
         float alpha = Mathf.Clamp01(opacity * _videoOpacityMultiplier);
-        player.targetCameraAlpha = 0f;
-
-        if (!_videoSurfaces.TryGetValue(player, out VideoSurface surface) || surface == null)
-            return;
-
-        SetSurfaceOpacity(surface, alpha);
-
-        if (_cameraBackgroundSurfaces.TryGetValue(player, out VideoSurface cameraBackgroundSurface))
-            SetSurfaceOpacity(cameraBackgroundSurface, alpha * Mathf.Clamp01(idleBackgroundOpacityMultiplier));
-
-        if (_idleBackgroundSurfaces.TryGetValue(player, out VideoSurface backgroundSurface))
-            SetSurfaceOpacity(backgroundSurface, alpha * Mathf.Clamp01(idleBackgroundOpacityMultiplier));
+        _videoRig.SetPlayerOpacity(player, alpha);
     }
 
-    private void SetSurfaceOpacity(VideoSurface surface, float alpha)
-    {
-        if (surface == null) return;
-
-        bool wasVisible = surface.alpha > 0.001f;
-        float clampedAlpha = Mathf.Clamp01(alpha);
-
-        if (surface.usesWorldPlane && !wasVisible && clampedAlpha > 0.001f)
-            surface.worldPoseInitialized = false;
-
-        surface.alpha = clampedAlpha;
-
-        if (surface.renderer != null)
-        {
-            surface.renderer.enabled = surface.alpha > 0.001f;
-            surface.renderer.renderingLayerMask = blizzardRenderingLayerMask;
-        }
-
-        SetSurfaceMaterialAlpha(surface.material, surface.alpha);
-    }
-
-    private void SetSurfaceMaterialAlpha(Material material, float alpha)
-    {
-        if (material == null) return;
-
-        Color color = Color.white;
-        if (material.HasProperty("_BaseColor"))
-            color = material.GetColor("_BaseColor");
-        else if (material.HasProperty("_Color"))
-            color = material.GetColor("_Color");
-
-        color.a = Mathf.Clamp01(alpha);
-
-        if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", color);
-        if (material.HasProperty("_Color")) material.SetColor("_Color", color);
-    }
-
-    private void SetMaterialTexture(Material material, string propertyName, Texture texture)
-    {
-        if (material == null || texture == null || !material.HasProperty(propertyName)) return;
-        material.SetTexture(propertyName, texture);
-    }
-
-    private void UpdateVideoSurfaces()
-    {
-        if (blizzardVideoCamera == null) return;
-
-        EnsureHorizontalMotionReference();
-
-        foreach (VideoSurface surface in _videoSurfaces.Values)
-            PositionVideoSurface(surface);
-
-        foreach (VideoSurface surface in _cameraBackgroundSurfaces.Values)
-            PositionVideoSurface(surface);
-
-        foreach (VideoSurface surface in _idleBackgroundSurfaces.Values)
-            PositionVideoSurface(surface);
-    }
-
-    private void HandleCameraPreCull(Camera cam)
-    {
-        if (cam == null || cam != blizzardVideoCamera) return;
-        UpdateVideoSurfaces();
-    }
-
-    private void PositionVideoSurface(VideoSurface surface)
-    {
-        if (surface == null || surface.quad == null || surface.mesh == null || blizzardVideoCamera == null) return;
-
-        ApplyCameraSurfaceSettings(surface);
-
-        Transform cameraTransform = blizzardVideoCamera.transform;
-        Transform quadTransform = surface.quad.transform;
-
-        if (surface.usesWorldPlane)
-        {
-            if (!TryEnsureWorldPlanePose(surface, cameraTransform))
-                return;
-
-            quadTransform.position = surface.worldCenter;
-            quadTransform.rotation = surface.worldRotation;
-        }
-        else
-        {
-            quadTransform.position = stabilizeBlizzardSurfaceOnScreen
-                ? cameraTransform.position
-                : GetCameraSurfacePosition(cameraTransform, surface);
-            quadTransform.rotation = cameraTransform.rotation;
-        }
-
-        quadTransform.localScale = Vector3.one;
-
-        if (surface.usesFixedCameraPlane && surface.usesWorldPlane)
-            PositionWorldPlaneSurface(surface);
-        else if (surface.usesFixedCameraPlane)
-            PositionFixedCameraPlaneSurface(surface);
-        else
-            PositionViewportSurface(surface, quadTransform);
-
-        surface.mesh.vertices = surface.vertices;
-        UpdateSurfaceUvs(surface);
-        surface.mesh.RecalculateBounds();
-    }
-
-    private void ApplyCameraSurfaceSettings(VideoSurface surface)
-    {
-        if (surface == null || !surface.usesCameraSurfaceSettings)
-            return;
-
-        surface.usesFixedCameraPlane = true;
-        surface.fixedWidth = Mathf.Max(0.01f, cameraSurfaceWidth);
-        surface.fixedHeight = Mathf.Max(0.01f, cameraSurfaceHeight);
-        float extraDepth = surface.usesCameraBackgroundSettings ? backgroundCopyDistanceFromNearBlizzard : 0f;
-        surface.fixedDepth = Mathf.Max(0.01f, cameraSurfaceDepth + extraDepth);
-        surface.fixedOffset = cameraSurfaceLocalOffset;
-        surface.horizontalMotionCompensation = stabilizeBlizzardSurfaceOnScreen
-            ? 0f
-            : horizontalMotionCompensation;
-    }
-
-    private void PositionViewportSurface(VideoSurface surface, Transform quadTransform)
-    {
-        float distance = Mathf.Max(0.01f, cameraSurfaceDepth);
-        float margin = 0.06f;
-        Vector3 localOffset = new Vector3(cameraSurfaceLocalOffset.x, cameraSurfaceLocalOffset.y, 0f);
-
-        surface.vertices[0] = GetViewportCornerLocal(quadTransform, -margin, -margin, distance) + localOffset;
-        surface.vertices[1] = GetViewportCornerLocal(quadTransform, -margin, 1f + margin, distance) + localOffset;
-        surface.vertices[2] = GetViewportCornerLocal(quadTransform, 1f + margin, 1f + margin, distance) + localOffset;
-        surface.vertices[3] = GetViewportCornerLocal(quadTransform, 1f + margin, -margin, distance) + localOffset;
-    }
-
-    private void PositionFixedCameraPlaneSurface(VideoSurface surface)
-    {
-        float halfWidth = Mathf.Max(0.01f, surface.fixedWidth) * 0.5f;
-        float halfHeight = Mathf.Max(0.01f, surface.fixedHeight) * 0.5f;
-        float depth = Mathf.Max(0.01f, surface.fixedDepth);
-        Vector3 center = new Vector3(surface.fixedOffset.x, surface.fixedOffset.y, depth);
-
-        surface.vertices[0] = center + new Vector3(-halfWidth, -halfHeight, 0f);
-        surface.vertices[1] = center + new Vector3(-halfWidth,  halfHeight, 0f);
-        surface.vertices[2] = center + new Vector3( halfWidth,  halfHeight, 0f);
-        surface.vertices[3] = center + new Vector3( halfWidth, -halfHeight, 0f);
-    }
-
-    private void PositionWorldPlaneSurface(VideoSurface surface)
-    {
-        float halfWidth = Mathf.Max(0.01f, surface.fixedWidth) * 0.5f;
-        float halfHeight = Mathf.Max(0.01f, surface.fixedHeight) * 0.5f;
-
-        surface.vertices[0] = new Vector3(-halfWidth, -halfHeight, 0f);
-        surface.vertices[1] = new Vector3(-halfWidth,  halfHeight, 0f);
-        surface.vertices[2] = new Vector3( halfWidth,  halfHeight, 0f);
-        surface.vertices[3] = new Vector3( halfWidth, -halfHeight, 0f);
-    }
-
-    private void UpdateSurfaceUvs(VideoSurface surface)
-    {
-        float uOffset = GetHorizontalUvOffset(surface);
-        Vector2 uvTiling = ClampUvTiling(surface.uvTiling);
-
-        surface.uvs[0] = new Vector2(uOffset, 0f);
-        surface.uvs[1] = new Vector2(uOffset, uvTiling.y);
-        surface.uvs[2] = new Vector2(uvTiling.x + uOffset, uvTiling.y);
-        surface.uvs[3] = new Vector2(uvTiling.x + uOffset, 0f);
-
-        surface.mesh.uv = surface.uvs;
-    }
-
-    private bool TryEnsureWorldPlanePose(VideoSurface surface, Transform cameraTransform)
-    {
-        if (surface == null || cameraTransform == null)
-            return false;
-
-        if (surface.worldPoseInitialized)
-            return true;
-
-        if (surface.alpha <= 0.001f)
-            return false;
-
-        Vector3 localCenter = new Vector3(
-            surface.fixedOffset.x,
-            surface.fixedOffset.y,
-            Mathf.Max(0.01f, surface.fixedDepth));
-
-        surface.worldCenter = ApplyBlizzardSurfaceWorldZLock(cameraTransform.TransformPoint(localCenter), surface);
-        surface.worldRotation = cameraTransform.rotation;
-        surface.worldPoseInitialized = true;
-        return true;
-    }
-
-    private Vector2 ClampUvTiling(Vector2 tiling)
-    {
-        return new Vector2(
-            Mathf.Max(0.01f, tiling.x),
-            Mathf.Max(0.01f, tiling.y));
-    }
-
-    private float GetHorizontalUvOffset(VideoSurface surface)
-    {
-        if (surface == null || blizzardVideoCamera == null || !_hasHorizontalMotionReference)
-            return 0f;
-
-        float compensation = Mathf.Clamp01(surface.horizontalMotionCompensation);
-        if (compensation <= 0f) return 0f;
-
-        float worldUnitsPerRepeat = Mathf.Max(0.01f, horizontalWorldUnitsPerTextureRepeat);
-        float cameraDeltaX = blizzardVideoCamera.transform.position.x - _horizontalMotionReferenceX;
-        return cameraDeltaX / worldUnitsPerRepeat * compensation;
-    }
-
-    private void EnsureHorizontalMotionReference()
-    {
-        if (blizzardVideoCamera == null) return;
-
-        if (_hasHorizontalMotionReference && _horizontalMotionReferenceCamera == blizzardVideoCamera)
-            return;
-
-        ResetHorizontalMotionReference();
-    }
-
-    private void ResetHorizontalMotionReference()
-    {
-        if (blizzardVideoCamera == null)
-        {
-            _hasHorizontalMotionReference = false;
-            _horizontalMotionReferenceCamera = null;
-            return;
-        }
-
-        _horizontalMotionReferenceX = blizzardVideoCamera.transform.position.x;
-        _horizontalMotionReferenceCamera = blizzardVideoCamera;
-        _hasHorizontalMotionReference = true;
-    }
-
-    private Vector3 GetCameraSurfacePosition(Transform cameraTransform, VideoSurface surface)
-    {
-        if (cameraTransform == null)
-            return Vector3.zero;
-
-        return ApplyBlizzardSurfaceWorldZLock(cameraTransform.position, surface);
-    }
-
-    private Vector3 ApplyBlizzardSurfaceWorldZLock(Vector3 position, VideoSurface surface)
-    {
-        if (!lockBlizzardSurfaceWorldZ || surface == null || surface.alpha <= 0.001f)
-            return position;
-
-        if (!_hasBlizzardSurfaceWorldZAnchor ||
-            _blizzardSurfaceWorldZAnchorCamera != blizzardVideoCamera)
-        {
-            _blizzardSurfaceWorldZAnchor = position.z;
-            _blizzardSurfaceWorldZAnchorCamera = blizzardVideoCamera;
-            _hasBlizzardSurfaceWorldZAnchor = true;
-        }
-
-        position.z = _blizzardSurfaceWorldZAnchor;
-        return position;
-    }
-
-    private void ResetBlizzardSurfaceWorldZAnchor()
-    {
-        _hasBlizzardSurfaceWorldZAnchor = false;
-        _blizzardSurfaceWorldZAnchorCamera = null;
-    }
-
-    private void ResetWorldBackgroundAnchors()
-    {
-        foreach (VideoSurface surface in _idleBackgroundSurfaces.Values)
-        {
-            if (surface == null || !surface.usesWorldPlane)
-                continue;
-
-            surface.worldPoseInitialized = false;
-        }
-    }
-
-    private Vector3 GetViewportCornerLocal(Transform surfaceTransform, float viewportX, float viewportY, float distance)
-    {
-        Vector3 worldPosition = blizzardVideoCamera.ViewportToWorldPoint(new Vector3(viewportX, viewportY, distance));
-        return surfaceTransform.InverseTransformPoint(worldPosition);
-    }
-
-    private void ReleaseVideoSurfaces()
-    {
-        foreach (VideoSurface surface in _videoSurfaces.Values)
-            ReleaseVideoSurface(surface);
-
-        foreach (VideoSurface surface in _cameraBackgroundSurfaces.Values)
-            ReleaseVideoSurface(surface);
-
-        foreach (VideoSurface surface in _idleBackgroundSurfaces.Values)
-            ReleaseVideoSurface(surface);
-
-        _videoSurfaces.Clear();
-        _cameraBackgroundSurfaces.Clear();
-        _idleBackgroundSurfaces.Clear();
-    }
-
-    private void ReleaseVideoSurface(VideoSurface surface)
-    {
-        if (surface == null) return;
-
-        if (surface.ownsTexture && surface.texture != null)
-        {
-            surface.texture.Release();
-            Destroy(surface.texture);
-        }
-
-        if (surface.material != null)
-            Destroy(surface.material);
-
-        if (surface.mesh != null)
-            Destroy(surface.mesh);
-    }
-
-    private int GetClipWidthSafe(VideoClip clip)
-        => clip != null && clip.width > 0 ? (int)clip.width : 1920;
-
-    private int GetClipHeightSafe(VideoClip clip)
-        => clip != null && clip.height > 0 ? (int)clip.height : 1080;
+    private static bool HasVideoSource(VideoPlayer player)
+        => player != null &&
+           (player.clip != null || !string.IsNullOrWhiteSpace(player.url));
 
     // ── Vegetación VAT ────────────────────────────────────────────────────────
 
@@ -1938,17 +1222,4 @@ public class WindStateManager : MonoBehaviour
         return true;
     }
 
-    private static string SanitizeName(string value)
-    {
-        if (string.IsNullOrEmpty(value)) return "Clip";
-
-        char[] chars = value.ToCharArray();
-        for (int i = 0; i < chars.Length; i++)
-        {
-            if (!char.IsLetterOrDigit(chars[i]) && chars[i] != '_' && chars[i] != '-')
-                chars[i] = '_';
-        }
-
-        return new string(chars);
-    }
 }
