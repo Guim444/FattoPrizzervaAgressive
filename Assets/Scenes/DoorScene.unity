@@ -163,7 +163,6 @@ GameObject:
   - component: {fileID: 273448950}
   - component: {fileID: 273448949}
   - component: {fileID: 273448948}
-  - component: {fileID: 273448953}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -593,20 +592,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 8.921, y: -179.087, z: -0.115}
---- !u!114 &273448953
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 273448947}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2fb89981ff34139409e042b7d4bd3ce9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  puntInicialReal: {fileID: 0}
-  objecteCamera: {fileID: 0}
 --- !u!1 &433149048
 GameObject:
   m_ObjectHideFlags: 0
@@ -773,28 +758,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 949979579}
-  - component: {fileID: 949979578}
+  - component: {fileID: 949979580}
   m_Layer: 0
   m_Name: RestartManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!114 &949979578
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 949979577}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2fb89981ff34139409e042b7d4bd3ce9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  puntInicialReal: {fileID: 55710991}
-  objecteCamera: {fileID: 273448947}
+  m_IsActive: 1
 --- !u!4 &949979579
 Transform:
   m_ObjectHideFlags: 0
@@ -810,6 +781,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &949979580
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 949979577}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 360028a600ca299438715cccacd993f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  reloadKey: 114
 --- !u!1 &986926444
 GameObject:
   m_ObjectHideFlags: 0
