@@ -96,7 +96,7 @@ public class WindStateManager : MonoBehaviour
     [Tooltip("Prepara los VideoPlayers ocultos para evitar tirones al mostrarlos. Solo el video visible se reproduce.")]
     [SerializeField] private bool prewarmPlayersWhileHidden = true;
 
-    // ── Estado interno ────────────────────────────────────────────────────────
+    // Estado interno
 
     private int  _currentStateIndex = -1;
     private bool _missingCameraWarningShown;
@@ -137,7 +137,7 @@ public class WindStateManager : MonoBehaviour
     private float _vatWindBlend = 1f;
     private float _vatWindBlendTarget = 1f;
 
-    // ── Lifecycle ─────────────────────────────────────────────────────────────
+    // Lifecycle 
 
     private void Awake()
     {
@@ -192,8 +192,6 @@ public class WindStateManager : MonoBehaviour
 
         AdvancePlantaMjAlembicPlayers();
     }
-
-    // ── API pública ────────────────────────────────────────────────────────────
 
     /// <summary>
     /// Tecla 1: salta directamente al idle fast sin transición.
@@ -484,8 +482,6 @@ public class WindStateManager : MonoBehaviour
         ApplyCurrentVideoAlphas();
     }
 
-    // ── Preload de VideoPlayers fijos ─────────────────────────────────────────
-
     private bool EnsureVideoRig(bool logWarning = true)
     {
         if (_videoRig != null && _playersRoot != null)
@@ -529,9 +525,7 @@ public class WindStateManager : MonoBehaviour
         if (_playersRoot == null || rig.PlayersRoot == rig.gameObject)
         {
             _playersRoot = null;
-            Debug.LogWarning(
-                $"[{nameof(WindStateManager)}] BlizzardVideoRig necesita un Players Root hijo y distinto del objeto del rig.",
-                rig);
+            Debug.LogWarning($"[{nameof(WindStateManager)}] BlizzardVideoRig necesita un Players Root hijo y distinto del objeto del rig.", rig);
             return;
         }
 
@@ -599,8 +593,6 @@ public class WindStateManager : MonoBehaviour
         ApplyCurrentVideoAlphas();
         PlayOnlyActiveFixedPlayer(requestPrepareIfNeeded: false);
     }
-
-    // ── Cambio visual por opacidad ────────────────────────────────────────────
 
     private void ShowIdle(int stateIdx)
     {
@@ -888,7 +880,7 @@ public class WindStateManager : MonoBehaviour
     private bool ShouldShowVideos =>
         CanRunVideoPlayers && _videoPlayersVisible;
 
-    // ── Callbacks de VideoPlayer ───────────────────────────────────────────────
+    // Callbacks de VideoPlayer 
 
     private void OnVideoError(VideoPlayer source, string message)
     {
@@ -910,7 +902,7 @@ public class WindStateManager : MonoBehaviour
         _prepareRequestedPlayers.Clear();
     }
 
-    // ── Configuración de VideoPlayer ──────────────────────────────────────────
+    //Configuración de VideoPlayer 
 
     private void ConfigureBasePlayer(VideoPlayer player)
     {
@@ -924,7 +916,7 @@ public class WindStateManager : MonoBehaviour
         player.isLooping         = true;
     }
 
-    // ── Cámara ────────────────────────────────────────────────────────────────
+    //Cámara 
 
     private void RefreshVideoCamera()
     {
