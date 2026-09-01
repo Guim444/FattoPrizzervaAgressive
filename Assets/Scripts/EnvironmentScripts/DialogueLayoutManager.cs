@@ -64,47 +64,20 @@ public sealed class DialogueLayoutManager : MonoBehaviour
     }
 
     [Header("Dialogue Lighting")]
-    [Tooltip("Luz auxiliar de LightingScene que se activa al entrar en la iglesia.")]
+    [Tooltip("Luz auxiliar siempre se debe desactivar en Play Mode.")]
     [SerializeField] private GameObject auxiliaryLight;
+    private void Start()
+    {
+        if (auxiliaryLight == null) return;
+
+        auxiliaryLight.SetActive(false);
+    }
 
     [Header("Dialogue Layout")]
     [Tooltip("Objetos de LightingScene que tienen una pose diferente durante el diálogo.")]
     [SerializeField] private List<LayoutEntry> entries = new List<LayoutEntry>();
 
-    private bool _auxiliaryLightWasActive;
-    private bool _hasCapturedAuxiliaryLightState;
-
     public int EntryCount => entries.Count;
-
-    public void EnterChurchLighting()
-    {
-        if (auxiliaryLight == null)
-        {
-            Debug.LogWarning(
-                $"[{nameof(DialogueLayoutManager)}] Auxiliar light no está asignada.",
-                this);
-            return;
-        }
-
-        if (!_hasCapturedAuxiliaryLightState)
-        {
-            _auxiliaryLightWasActive = auxiliaryLight.activeSelf;
-            _hasCapturedAuxiliaryLightState = true;
-        }
-
-        auxiliaryLight.SetActive(true);
-    }
-
-    public void RestoreChurchLighting()
-    {
-        if (!_hasCapturedAuxiliaryLightState)
-            return;
-
-        if (auxiliaryLight != null)
-            auxiliaryLight.SetActive(_auxiliaryLightWasActive);
-
-        _hasCapturedAuxiliaryLightState = false;
-    }
 
     [ContextMenu("Layout/Aplicar Gameplay")]
     public void ApplyGameplayLayout()

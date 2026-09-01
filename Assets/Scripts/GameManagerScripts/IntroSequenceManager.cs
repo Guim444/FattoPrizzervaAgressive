@@ -1241,16 +1241,6 @@ public class IntroSequenceManager : MonoBehaviour
 
     private void EnterChurchLighting(string lightingSceneName)
     {
-        if (_dialogueLayoutManager == null ||
-           _dialogueLayoutManager.gameObject.scene.name != lightingSceneName)
-        {
-            _dialogueLayoutManager = FindComponentInScene<DialogueLayoutManager>(
-                lightingSceneName);
-        }
-
-        if (_dialogueLayoutManager != null)
-            _dialogueLayoutManager.EnterChurchLighting();
-
         if (!playerSorroundLight) return;
 
         StartCoroutine(DeactivatePlayerSorroundingLight());
