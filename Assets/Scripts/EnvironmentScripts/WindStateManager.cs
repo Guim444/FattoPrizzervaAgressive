@@ -111,6 +111,10 @@ public class WindStateManager : MonoBehaviour
     private readonly List<VideoPlayer> _allPlayers = new List<VideoPlayer>();
     private readonly HashSet<VideoPlayer> _prepareRequestedPlayers = new HashSet<VideoPlayer>();
     private bool _missingVideoRigWarningShown;
+    private bool _hasPendingWindRequest;
+    private WindPreset _pendingWindPreset;
+    private bool _pendingWindRequestUsesTransition;
+    private float _pendingWindCrossFadeOverride = -1f;
 
     private int   _activeIdleIndex       = -1;
     private int   _activeTransitionIndex = -1;
@@ -156,7 +160,7 @@ public class WindStateManager : MonoBehaviour
         UseInitialWalkAlembicDistance();
 
         if (preloadPlayersOnAwake)
-            EnsureVideoRig();
+            EnsureVideoRig(logWarning: false);
 
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
@@ -165,7 +169,10 @@ public class WindStateManager : MonoBehaviour
     {
         // Si otro manager llama SnapToState/TransitionTo en Awake, respetamos eso.
         // Si nadie llamó nada, dejamos W1 visible por defecto cuando exista.
-        if (_currentStateIndex < 0 && windStates != null && windStates.Length > 0)
+        if (_currentStateIndex < 0 &&
+            !_hasPendingWindRequest &&
+            windStates != null &&
+            windStates.Length > 0)
             SnapToState(WindPreset.W1_MaxIdle);
     }
 
@@ -209,6 +216,14 @@ public class WindStateManager : MonoBehaviour
         int idx = (int)preset;
         if (!IsValidStateIndex(idx)) return;
 
+        if (!EnsureVideoRig(logWarning: false))
+        {
+            QueuePendingWindRequest(preset, useTransition: false, crossFadeOverride: -1f);
+            return;
+        }
+
+        ClearPendingWindRequest();
+
         CancelTransitionToIdleCrossFade();
 
         _currentStateIndex = idx;
@@ -230,6 +245,17 @@ public class WindStateManager : MonoBehaviour
     {
         int idx = (int)preset;
         if (!IsValidStateIndex(idx)) return;
+
+        if (!EnsureVideoRig(logWarning: false))
+        {
+            QueuePendingWindRequest(
+                preset,
+                useTransition: true,
+                crossFadeOverride: _crossFadeOverride);
+            return;
+        }
+
+        ClearPendingWindRequest();
 
         if (idx == _currentStateIndex && _activeTransitionIndex < 0)
         {
@@ -275,6 +301,48 @@ public class WindStateManager : MonoBehaviour
         float clipDuration = GetClipDurationSafe(transition);
         float crossFadeDuration = Mathf.Min(transitionToIdleCrossFadeDuration, clipDuration);
         _transitionEndsAtUnscaled = Time.unscaledTime + Mathf.Max(0f, clipDuration - crossFadeDuration);
+    }
+
+    private void QueuePendingWindRequest(
+        WindPreset preset,
+        bool useTransition,
+        float crossFadeOverride)
+    {
+        _hasPendingWindRequest = true;
+        _pendingWindPreset = preset;
+        _pendingWindRequestUsesTransition = useTransition;
+        _pendingWindCrossFadeOverride = crossFadeOverride;
+
+        Debug.Log(
+            $"[BlizzardDebug] W{(int)preset + 1} queda pendiente porque BlizzardVideoRig todavía no está disponible.",
+            this);
+    }
+
+    private void ApplyPendingWindRequest()
+    {
+        if (!_hasPendingWindRequest)
+            return;
+
+        WindPreset preset = _pendingWindPreset;
+        bool useTransition = _pendingWindRequestUsesTransition;
+        float crossFadeOverride = _pendingWindCrossFadeOverride;
+        ClearPendingWindRequest();
+
+        Debug.Log(
+            $"[BlizzardDebug] BlizzardVideoRig enlazado; aplicando W{(int)preset + 1} pendiente " +
+            $"({(useTransition ? "transición" : "idle directo")}).",
+            this);
+
+        if (useTransition)
+            TransitionTo(preset, crossFadeOverride);
+        else
+            SnapToState(preset);
+    }
+
+    private void ClearPendingWindRequest()
+    {
+        _hasPendingWindRequest = false;
+        _pendingWindCrossFadeOverride = -1f;
     }
 
     public static int ActivateAllVideoPlayersRoots()
@@ -342,14 +410,18 @@ public class WindStateManager : MonoBehaviour
 
     public void ActivateVideoPlayersRoot()
     {
-        if (!EnsureVideoRig())
+        // Conserva la intención aunque GameplayScene todavía no haya publicado el rig.
+        _videoPlayersVisible = true;
+
+        if (!EnsureVideoRig(logWarning: false))
         {
-            Debug.LogWarning($"[{nameof(WindStateManager)}] No existe un BlizzardVideoRig configurado.", this);
+            Debug.Log(
+                "[BlizzardDebug] La activación visual queda pendiente hasta enlazar BlizzardVideoRig.",
+                this);
             return;
         }
 
         _videoRig.SetPlayersRootActive(true);
-        _videoPlayersVisible = true;
         RefreshVideoCamera();
 
         if (!_blizzardVideoPlaybackEnabled)
@@ -546,8 +618,8 @@ public class WindStateManager : MonoBehaviour
         _idlePlayers = new VideoPlayer[stateCount];
         _transitionPlayers = new VideoPlayer[stateCount];
 
-        _videoPlayersVisible = videoPlayersRootStartsActive;
-        rig.SetPlayersRootActive(videoPlayersRootStartsActive || prewarmPlayersWhileHidden);
+        _videoPlayersVisible = _videoPlayersVisible || videoPlayersRootStartsActive;
+        rig.SetPlayersRootActive(_videoPlayersVisible || prewarmPlayersWhileHidden);
 
         for (int i = 0; i < stateCount; i++)
         {
@@ -561,6 +633,12 @@ public class WindStateManager : MonoBehaviour
 
         if (CanRunVideoPlayers)
             PrepareAllFixedPlayers();
+
+        if (_hasPendingWindRequest)
+        {
+            ApplyPendingWindRequest();
+            return;
+        }
 
         ApplyCurrentVideoAlphas();
         PlayOnlyActiveFixedPlayer(requestPrepareIfNeeded: true);
@@ -936,6 +1014,14 @@ public class WindStateManager : MonoBehaviour
         _activeTransitionOpacity = 0f;
 
         PlayOnlyActiveFixedPlayer(requestPrepareIfNeeded: true);
+
+        if (_activeIdleIndex == (int)WindPreset.W2_MaxToMedium)
+        {
+            Debug.Log(
+                $"[BlizzardDebug] Crossfade W2 completado; W2_Idle queda activo " +
+                $"(prepared={idle != null && idle.isPrepared}, play solicitado={idle != null}).",
+                this);
+        }
     }
 
     private void CancelTransitionToIdleCrossFade()
@@ -1017,6 +1103,14 @@ public class WindStateManager : MonoBehaviour
 
         if (ShouldShowVideos && !idle.isPlaying)
             idle.Play();
+
+        if (idleIdx == (int)WindPreset.W2_MaxToMedium)
+        {
+            Debug.Log(
+                $"[BlizzardDebug] Crossfade W2 iniciado: transición='{transition?.name}', " +
+                $"idle='{idle.name}', prepared={idle.isPrepared}, visible={ShouldShowVideos}.",
+                this);
+        }
 
         if (_activeTransitionToIdleCrossFadeDuration <= 0f)
             CompleteTransitionToIdleCrossFade();
