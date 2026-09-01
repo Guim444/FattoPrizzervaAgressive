@@ -96,6 +96,9 @@ public class WindStateManager : MonoBehaviour
     [Tooltip("Prepara los VideoPlayers ocultos para evitar tirones al mostrarlos. Solo el video visible se reproduce.")]
     [SerializeField] private bool prewarmPlayersWhileHidden = true;
 
+    [Tooltip("Duracion del fundido simultaneo entre el final de una transicion y su idle.")]
+    [SerializeField, Min(0f)] private float transitionToIdleCrossFadeDuration = 0.6f;
+
     // Estado interno
 
     private int  _currentStateIndex = -1;
@@ -114,6 +117,9 @@ public class WindStateManager : MonoBehaviour
     private int   _pendingIdleAfterTransitionIndex = -1;
     private float _transitionEndsAtUnscaled = -1f;
     private float _activeTransitionOpacity = 0f;
+    private bool _transitionToIdleCrossFadeActive;
+    private float _transitionToIdleCrossFadeStartedAt;
+    private float _activeTransitionToIdleCrossFadeDuration;
     private bool  _videoPlayersVisible;
     private float _videoOpacityMultiplier = 1f;
     private bool _videoOpacityFadeActive;
@@ -181,6 +187,7 @@ public class WindStateManager : MonoBehaviour
 
         RefreshVideoCamera();
         UpdateTransitionTimer();
+        UpdateTransitionToIdleCrossFade();
         UpdateAlembicDistanceTransition();
         UpdateAlembicCulling();
         UpdateVideoOpacityFade();
@@ -201,6 +208,8 @@ public class WindStateManager : MonoBehaviour
     {
         int idx = (int)preset;
         if (!IsValidStateIndex(idx)) return;
+
+        CancelTransitionToIdleCrossFade();
 
         _currentStateIndex = idx;
         _activeTransitionIndex = -1;
@@ -229,6 +238,8 @@ public class WindStateManager : MonoBehaviour
             ShowIdle(idx);
             return;
         }
+
+        CancelTransitionToIdleCrossFade();
 
         _currentStateIndex = idx;
 
@@ -261,7 +272,9 @@ public class WindStateManager : MonoBehaviour
         _activeTransitionOpacity = opacity;
         SetVideoOpacity(transition, ShouldShowVideos ? opacity : 0f);
 
-        _transitionEndsAtUnscaled = Time.unscaledTime + GetClipDurationSafe(transition);
+        float clipDuration = GetClipDurationSafe(transition);
+        float crossFadeDuration = Mathf.Min(transitionToIdleCrossFadeDuration, clipDuration);
+        _transitionEndsAtUnscaled = Time.unscaledTime + Mathf.Max(0f, clipDuration - crossFadeDuration);
     }
 
     public static int ActivateAllVideoPlayersRoots()
@@ -659,6 +672,12 @@ public class WindStateManager : MonoBehaviour
 
     private void PlayOnlyActiveFixedPlayer(bool requestPrepareIfNeeded)
     {
+        if (_transitionToIdleCrossFadeActive)
+        {
+            MaintainTransitionToIdleCrossFade(requestPrepareIfNeeded);
+            return;
+        }
+
         VideoPlayer activePlayer = ShouldShowVideos ? GetActiveFixedPlayer() : null;
 
         for (int i = 0; i < _allPlayers.Count; i++)
@@ -705,7 +724,13 @@ public class WindStateManager : MonoBehaviour
         player.Pause();
 
         // Reiniciar clips de transicion
-        if (IsTransitionPlayer(player) && player.canSetTime)
+        if (IsTransitionPlayer(player))
+            RewindTransitionPlayer(player);
+    }
+
+    private static void RewindTransitionPlayer(VideoPlayer player)
+    {
+        if (player != null && player.canSetTime)
             player.time = 0d;
     }
 
@@ -729,6 +754,12 @@ public class WindStateManager : MonoBehaviour
 
         if (!ShouldShowVideos)
             return;
+
+        if (_transitionToIdleCrossFadeActive)
+        {
+            ApplyTransitionToIdleCrossFadeAlphas();
+            return;
+        }
 
         if (_activeTransitionIndex >= 0)
         {
@@ -757,6 +788,12 @@ public class WindStateManager : MonoBehaviour
     {
         if (!CanRunVideoPlayers)
             return;
+
+        if (_transitionToIdleCrossFadeActive)
+        {
+            MaintainTransitionToIdleCrossFade(requestPrepareIfNeeded: true);
+            return;
+        }
 
         if (_activeTransitionIndex >= 0)
         {
@@ -808,6 +845,122 @@ public class WindStateManager : MonoBehaviour
         }
     }
 
+    private void MaintainTransitionToIdleCrossFade(bool requestPrepareIfNeeded)
+    {
+        VideoPlayer transition = GetTransitionPlayer(_activeTransitionIndex);
+        VideoPlayer idle = GetIdlePlayer(_activeIdleIndex);
+
+        ApplyTransitionToIdleCrossFadeAlphas();
+
+        for (int i = 0; i < _allPlayers.Count; i++)
+        {
+            VideoPlayer player = _allPlayers[i];
+            if (player == null) continue;
+
+            bool shouldPlay = ShouldShowVideos && (player == transition || player == idle);
+            if (shouldPlay)
+            {
+                if (player.isPrepared)
+                {
+                    if (!player.isPlaying)
+                        player.Play();
+                }
+                else if (requestPrepareIfNeeded)
+                {
+                    RequestPrepare(player);
+                }
+            }
+            else if (player.isPlaying)
+            {
+                PauseFixedPlayer(player);
+            }
+        }
+    }
+
+    private void ApplyTransitionToIdleCrossFadeAlphas()
+    {
+        if (!_transitionToIdleCrossFadeActive)
+            return;
+
+        float progress = GetTransitionToIdleCrossFadeProgress();
+        float blend = Mathf.SmoothStep(0f, 1f, progress);
+
+        VideoPlayer transition = GetTransitionPlayer(_activeTransitionIndex);
+        VideoPlayer idle = GetIdlePlayer(_activeIdleIndex);
+
+        SetVideoOpacity(transition, Mathf.Lerp(_activeTransitionOpacity, 0f, blend));
+        SetVideoOpacity(idle, Mathf.Lerp(0f, GetIdleOpacity(_activeIdleIndex), blend));
+    }
+
+    private float GetTransitionToIdleCrossFadeProgress()
+    {
+        if (_activeTransitionToIdleCrossFadeDuration <= 0f)
+            return 1f;
+
+        return Mathf.Clamp01(
+            (Time.unscaledTime - _transitionToIdleCrossFadeStartedAt)
+            / _activeTransitionToIdleCrossFadeDuration);
+    }
+
+    private void UpdateTransitionToIdleCrossFade()
+    {
+        if (!_transitionToIdleCrossFadeActive)
+            return;
+
+        ApplyTransitionToIdleCrossFadeAlphas();
+
+        if (GetTransitionToIdleCrossFadeProgress() >= 1f)
+            CompleteTransitionToIdleCrossFade();
+    }
+
+    private void CompleteTransitionToIdleCrossFade()
+    {
+        VideoPlayer transition = GetTransitionPlayer(_activeTransitionIndex);
+        VideoPlayer idle = GetIdlePlayer(_activeIdleIndex);
+
+        SetVideoOpacity(transition, 0f);
+        SetVideoOpacity(idle, ShouldShowVideos ? GetIdleOpacity(_activeIdleIndex) : 0f);
+
+        if (transition != null)
+        {
+            if (transition.isPlaying)
+                PauseFixedPlayer(transition);
+            else
+                RewindTransitionPlayer(transition);
+        }
+
+        _transitionToIdleCrossFadeActive = false;
+        _activeTransitionIndex = -1;
+        _pendingIdleAfterTransitionIndex = -1;
+        _transitionEndsAtUnscaled = -1f;
+        _activeTransitionOpacity = 0f;
+
+        PlayOnlyActiveFixedPlayer(requestPrepareIfNeeded: true);
+    }
+
+    private void CancelTransitionToIdleCrossFade()
+    {
+        if (!_transitionToIdleCrossFadeActive)
+            return;
+
+        VideoPlayer transition = GetTransitionPlayer(_activeTransitionIndex);
+        VideoPlayer idle = GetIdlePlayer(_activeIdleIndex);
+
+        if (transition != null)
+        {
+            if (transition.isPlaying)
+                PauseFixedPlayer(transition);
+            else
+                RewindTransitionPlayer(transition);
+        }
+
+        if (idle != null && idle.isPlaying)
+            PauseFixedPlayer(idle);
+
+        _transitionToIdleCrossFadeActive = false;
+        _activeTransitionToIdleCrossFadeDuration = 0f;
+    }
+
     private void UpdateVideoOpacityFade()
     {
         if (!_videoOpacityFadeActive)
@@ -827,27 +980,46 @@ public class WindStateManager : MonoBehaviour
 
     private void UpdateTransitionTimer()
     {
-        if (_activeTransitionIndex < 0 || _transitionEndsAtUnscaled < 0f)
+        if (_transitionToIdleCrossFadeActive ||
+            _activeTransitionIndex < 0 ||
+            _transitionEndsAtUnscaled < 0f)
             return;
 
         if (Time.unscaledTime < _transitionEndsAtUnscaled)
             return;
 
         int idleIdx = _pendingIdleAfterTransitionIndex;
+        VideoPlayer idle = GetIdlePlayer(idleIdx);
 
-        if (_activeTransitionIndex >= 0)
+        // No empezamos el fundido hasta que el idle pueda mostrar su primer frame.
+        // Mientras tanto la transicion sigue visible y reproduciendose.
+        if (idle == null)
         {
-            VideoPlayer transition = GetTransitionPlayer(_activeTransitionIndex);
-            if (transition != null)
-                SetVideoOpacity(transition, 0f);
+            ShowIdle(idleIdx);
+            return;
         }
 
-        _activeTransitionIndex = -1;
+        if (!idle.isPrepared)
+        {
+            RequestPrepare(idle);
+            return;
+        }
+
+        _activeIdleIndex = idleIdx;
         _pendingIdleAfterTransitionIndex = -1;
         _transitionEndsAtUnscaled = -1f;
-        _activeTransitionOpacity = 0f;
+        VideoPlayer transition = GetTransitionPlayer(_activeTransitionIndex);
+        _activeTransitionToIdleCrossFadeDuration = Mathf.Min(
+            Mathf.Max(0f, transitionToIdleCrossFadeDuration),
+            GetClipDurationSafe(transition));
+        _transitionToIdleCrossFadeStartedAt = Time.unscaledTime;
+        _transitionToIdleCrossFadeActive = true;
 
-        ShowIdle(idleIdx);
+        if (ShouldShowVideos && !idle.isPlaying)
+            idle.Play();
+
+        if (_activeTransitionToIdleCrossFadeDuration <= 0f)
+            CompleteTransitionToIdleCrossFade();
     }
 
 
