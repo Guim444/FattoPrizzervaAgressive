@@ -818,10 +818,7 @@ public class IntroSequenceManager : MonoBehaviour
 
             if (transformationProgress > 0f)
             {
-                yield return PlayIntroTransformation(
-                    TransformToGhostStateHash,
-                    0f,
-                    transformationProgress);
+                yield return PlayIntroTransformation(TransformToGhostStateHash, 0f, transformationProgress);
 
                 if (!lockHumanForm && transformationProgress >= 0.999f)
                     yield return HoldFullGhostIdle();
@@ -874,12 +871,9 @@ public class IntroSequenceManager : MonoBehaviour
         playerAnimator.Play(stateHash, 0, startNormalizedTime);
         playerAnimator.Update(0f);
 
-        while (!lockHumanForm &&
-               playerAnimator != null &&
-               playerAnimator.enabled)
+        while (!lockHumanForm && playerAnimator != null && playerAnimator.enabled)
         {
-            AnimatorStateInfo stateInfo =
-                playerAnimator.GetCurrentAnimatorStateInfo(0);
+            AnimatorStateInfo stateInfo = playerAnimator.GetCurrentAnimatorStateInfo(0);
 
             if (stateInfo.fullPathHash != stateHash ||
                 stateInfo.normalizedTime >= endNormalizedTime)
@@ -927,9 +921,7 @@ public class IntroSequenceManager : MonoBehaviour
         {
             if (!_hasWarnedInvalidBlinkQuarterMarkers)
             {
-                Debug.LogWarning(
-                    $"[{nameof(IntroSequenceManager)}] Asigna exactamente tres marcadores para delimitar los cuatro tramos del blink.",
-                    this);
+                Debug.LogWarning($"[{nameof(IntroSequenceManager)}] Asigna exactamente tres marcadores para delimitar los cuatro tramos del blink.", this);
                 _hasWarnedInvalidBlinkQuarterMarkers = true;
             }
 
@@ -1029,27 +1021,21 @@ public class IntroSequenceManager : MonoBehaviour
         if (firstTarget == null || secondTarget == null ||
             rioTutteStandard == null || rioTutteTransformation == null)
         {
-            Debug.LogError(
-                $"[{nameof(IntroSequenceManager)}] Asigna los dos puntos de automove y las dos variantes visuales de RioTutte.",
-                this);
+            Debug.LogError($"[{nameof(IntroSequenceManager)}] Asigna los dos puntos de automove y las dos variantes visuales de RioTutte.", this);
             return false;
         }
 
         if (string.IsNullOrWhiteSpace(dialogueSceneName) ||
             !SceneManager.GetSceneByName(dialogueSceneName).isLoaded)
         {
-            Debug.LogError(
-                $"[{nameof(IntroSequenceManager)}] La escena de diálogo '{dialogueSceneName}' no está cargada.",
-                this);
+            Debug.LogError($"[{nameof(IntroSequenceManager)}] La escena de diálogo '{dialogueSceneName}' no está cargada.", this);
             return false;
         }
 
         if (string.IsNullOrWhiteSpace(lightingSceneName) ||
             !SceneManager.GetSceneByName(lightingSceneName).isLoaded)
         {
-            Debug.LogError(
-                $"[{nameof(IntroSequenceManager)}] La escena de iluminación '{lightingSceneName}' no está cargada.",
-                this);
+            Debug.LogError($"[{nameof(IntroSequenceManager)}] La escena de iluminación '{lightingSceneName}' no está cargada.", this);
             return false;
         }
 
@@ -1103,8 +1089,7 @@ public class IntroSequenceManager : MonoBehaviour
 
         EnterChurchLighting(lightingSceneName);
 
-        Coroutine cameraLowering = StartCoroutine(
-            LowerCameraDuringAutoMove(autoMoveCameraY, firstDuration));
+        Coroutine cameraLowering = StartCoroutine(LowerCameraDuringAutoMove(autoMoveCameraY, firstDuration));
         yield return StartCoroutine(MovePlayerToPosition(firstTarget.position, firstDuration));
 
         ShowRioTutteTransformation(rioTutteStandard, rioTutteTransformation);
@@ -1131,28 +1116,21 @@ public class IntroSequenceManager : MonoBehaviour
         EnsureDialogueCameraController();
         if (dialogueCameraController != null)
         {
-            hudManager?.PrepareDialogueCameraTransition(
-                dialogueCameraBlendDuration);
-            dialogueCameraActivated = dialogueCameraController.ActivateCamera(
-                playerTransform,
-                rioTutteTransformation);
+            hudManager?.PrepareDialogueCameraTransition(dialogueCameraBlendDuration);
+            dialogueCameraActivated = dialogueCameraController.ActivateCamera(playerTransform, rioTutteTransformation);
 
             if (!dialogueCameraActivated)
                 hudManager?.CompleteChurchTestCameraTransition();
         }
         else
         {
-            Debug.LogWarning(
-                $"[{nameof(IntroSequenceManager)}] DialogueCameraController no está asignado.",
-                this);
+            Debug.LogWarning($"[{nameof(IntroSequenceManager)}] DialogueCameraController no está asignado.", this);
         }
 
         _churchSequenceCoroutine = null;
     }
 
-    private bool EnterDialogueLayout(
-        string lightingSceneName,
-        string dialogueSceneName)
+    private bool EnterDialogueLayout(string lightingSceneName, string dialogueSceneName)
     {
         if (!TryResolveDialogueLayout(lightingSceneName, dialogueSceneName))
             return false;
@@ -1163,9 +1141,7 @@ public class IntroSequenceManager : MonoBehaviour
         return true;
     }
 
-    private bool ExitDialogueLayout(
-        string lightingSceneName,
-        string dialogueSceneName)
+    private bool ExitDialogueLayout(string lightingSceneName, string dialogueSceneName)
     {
         if (!TryResolveDialogueLayout(lightingSceneName, dialogueSceneName))
             return false;
@@ -1298,23 +1274,6 @@ public class IntroSequenceManager : MonoBehaviour
         playerSorroundLight.gameObject.SetActive(false);
     }
 
-    private static Transform FindDescendantByName(
-        Transform root,
-        string objectName)
-    {
-        if (root == null)
-            return null;
-
-        Transform[] descendants = root.GetComponentsInChildren<Transform>(true);
-        foreach (Transform descendant in descendants)
-        {
-            if (descendant.name == objectName)
-                return descendant;
-        }
-
-        return null;
-    }
-
     private void EnsureDialogueCameraController()
     {
         if (dialogueCameraController == null)
@@ -1444,8 +1403,7 @@ public class IntroSequenceManager : MonoBehaviour
             return;
         }
 
-        Collider platformCollider =
-            dialoguePlayerPlatform.GetComponentInChildren<Collider>();
+        Collider platformCollider = dialoguePlayerPlatform.GetComponentInChildren<Collider>();
         Vector3 targetPosition = dialoguePlayerPlatform.position;
 
         if (platformCollider != null)
@@ -1501,9 +1459,7 @@ public class IntroSequenceManager : MonoBehaviour
 
         if (lightingManagers.Length == 0 || environmentManagers.Length == 0)
         {
-            Debug.LogWarning(
-                $"[{nameof(IntroSequenceManager)}] La fase {phase} no encontró todos los gestores de iluminación y entorno activos.",
-                this);
+            Debug.LogWarning($"[{nameof(IntroSequenceManager)}] La fase {phase} no encontró todos los gestores de iluminación y entorno activos.", this);
         }
     }
 
