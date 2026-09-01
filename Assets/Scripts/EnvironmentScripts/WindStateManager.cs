@@ -669,7 +669,7 @@ public class WindStateManager : MonoBehaviour
             if (player != activePlayer)
             {
                 if (player.isPlaying)
-                    player.Pause();
+                    PauseFixedPlayer(player);
 
                 continue;
             }
@@ -692,9 +692,35 @@ public class WindStateManager : MonoBehaviour
         {
             VideoPlayer player = _allPlayers[i];
             if (player != null && player.isPlaying)
-                player.Pause();
+                PauseFixedPlayer(player);
         }
 
+    }
+
+    private void PauseFixedPlayer(VideoPlayer player)
+    {
+        if (player == null || !player.isPlaying)
+            return;
+
+        player.Pause();
+
+        // Reiniciar clips de transicion
+        if (IsTransitionPlayer(player) && player.canSetTime)
+            player.time = 0d;
+    }
+
+    private bool IsTransitionPlayer(VideoPlayer player)
+    {
+        if (player == null || _transitionPlayers == null)
+            return false;
+
+        for (int i = 0; i < _transitionPlayers.Length; i++)
+        {
+            if (_transitionPlayers[i] == player)
+                return true;
+        }
+
+        return false;
     }
 
     private void ApplyCurrentVideoAlphas()
@@ -750,7 +776,7 @@ public class WindStateManager : MonoBehaviour
                 }
                 else if (player.isPlaying)
                 {
-                    player.Pause();
+                    PauseFixedPlayer(player);
                 }
             }
 
@@ -776,7 +802,7 @@ public class WindStateManager : MonoBehaviour
                 }
                 else if (player.isPlaying)
                 {
-                    player.Pause();
+                    PauseFixedPlayer(player);
                 }
             }
         }
