@@ -312,10 +312,6 @@ public class WindStateManager : MonoBehaviour
         _pendingWindPreset = preset;
         _pendingWindRequestUsesTransition = useTransition;
         _pendingWindCrossFadeOverride = crossFadeOverride;
-
-        Debug.Log(
-            $"[BlizzardDebug] W{(int)preset + 1} queda pendiente porque BlizzardVideoRig todavía no está disponible.",
-            this);
     }
 
     private void ApplyPendingWindRequest()
@@ -327,11 +323,6 @@ public class WindStateManager : MonoBehaviour
         bool useTransition = _pendingWindRequestUsesTransition;
         float crossFadeOverride = _pendingWindCrossFadeOverride;
         ClearPendingWindRequest();
-
-        Debug.Log(
-            $"[BlizzardDebug] BlizzardVideoRig enlazado; aplicando W{(int)preset + 1} pendiente " +
-            $"({(useTransition ? "transición" : "idle directo")}).",
-            this);
 
         if (useTransition)
             TransitionTo(preset, crossFadeOverride);
@@ -414,12 +405,7 @@ public class WindStateManager : MonoBehaviour
         _videoPlayersVisible = true;
 
         if (!EnsureVideoRig(logWarning: false))
-        {
-            Debug.Log(
-                "[BlizzardDebug] La activación visual queda pendiente hasta enlazar BlizzardVideoRig.",
-                this);
             return;
-        }
 
         _videoRig.SetPlayersRootActive(true);
         RefreshVideoCamera();
@@ -1014,14 +1000,6 @@ public class WindStateManager : MonoBehaviour
         _activeTransitionOpacity = 0f;
 
         PlayOnlyActiveFixedPlayer(requestPrepareIfNeeded: true);
-
-        if (_activeIdleIndex == (int)WindPreset.W2_MaxToMedium)
-        {
-            Debug.Log(
-                $"[BlizzardDebug] Crossfade W2 completado; W2_Idle queda activo " +
-                $"(prepared={idle != null && idle.isPrepared}, play solicitado={idle != null}).",
-                this);
-        }
     }
 
     private void CancelTransitionToIdleCrossFade()
@@ -1103,14 +1081,6 @@ public class WindStateManager : MonoBehaviour
 
         if (ShouldShowVideos && !idle.isPlaying)
             idle.Play();
-
-        if (idleIdx == (int)WindPreset.W2_MaxToMedium)
-        {
-            Debug.Log(
-                $"[BlizzardDebug] Crossfade W2 iniciado: transición='{transition?.name}', " +
-                $"idle='{idle.name}', prepared={idle.isPrepared}, visible={ShouldShowVideos}.",
-                this);
-        }
 
         if (_activeTransitionToIdleCrossFadeDuration <= 0f)
             CompleteTransitionToIdleCrossFade();
