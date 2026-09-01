@@ -8,6 +8,10 @@ using UnityEngine;
 /// </summary>
 public class PlayerDepthScaler : MonoBehaviour
 {
+    [Header("Visuals")]
+    [Tooltip("Transform visual que se escala. Vacío mantiene el comportamiento anterior y escala este GameObject.")]
+    [SerializeField] private Transform visualScaleRoot;
+
     [Header("Z Boundaries")]
     [Tooltip("Closest Z position to camera (maximum scale).")]
     public float minZ = 0f;
@@ -31,10 +35,11 @@ public class PlayerDepthScaler : MonoBehaviour
         float t = Mathf.Clamp01(Mathf.InverseLerp(minZ, maxZ, z));
         float scaleFactor = Mathf.Lerp(maxScale, minScale, t);
 
-        float signX = Mathf.Sign(transform.localScale.x);
+        Transform scaleTarget = visualScaleRoot != null ? visualScaleRoot : transform;
+        float signX = Mathf.Sign(scaleTarget.localScale.x);
         if (Mathf.Approximately(signX, 0f))
             signX = 1f;
 
-        transform.localScale = new Vector3(scaleFactor * signX, scaleFactor, scaleFactor);
+        scaleTarget.localScale = new Vector3(scaleFactor * signX, scaleFactor, scaleFactor);
     }
 }

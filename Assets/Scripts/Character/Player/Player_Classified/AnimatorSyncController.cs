@@ -13,7 +13,7 @@ public class AnimatorSyncController : MonoBehaviour
 
     void Awake()
     {
-        _player = GetComponent<PlayerController>();
+        _player = GetComponentInParent<PlayerController>();
     }
 
     /// <summary>

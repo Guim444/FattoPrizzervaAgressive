@@ -65,7 +65,9 @@ public class PlayerController : MonoBehaviour
     void Awake()
     {
         cc = GetComponent<CharacterController>();
-        animator = GetComponent<Animator>();
+        if (animator == null)
+            animator = GetComponentInChildren<Animator>(true);
+
         staminaManager = GetComponent<PlayerStaminaManager>();
         inputHandler = GetComponent<PlayerInputHandler>();
         movement = GetComponent<PlayerMovement>();

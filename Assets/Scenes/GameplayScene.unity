@@ -2196,9 +2196,19 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
+--- !u!95 &448675060 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 591305806351330721, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
+  m_PrefabInstance: {fileID: 448675059}
+  m_PrefabAsset: {fileID: 0}
 --- !u!143 &448675061 stripped
 CharacterController:
   m_CorrespondingSourceObject: {fileID: 7686821030642128762, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
+  m_PrefabInstance: {fileID: 448675059}
+  m_PrefabAsset: {fileID: 0}
+--- !u!212 &448675062 stripped
+SpriteRenderer:
+  m_CorrespondingSourceObject: {fileID: 9111144274337832071, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
   m_PrefabInstance: {fileID: 448675059}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &460725432
@@ -9178,16 +9188,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0d275ec5f2881b4b9c9d79b3c5d486d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!95 &2004004937 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 2058333521518567832, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
-  m_PrefabInstance: {fileID: 448675059}
-  m_PrefabAsset: {fileID: 0}
---- !u!212 &2004004950 stripped
-SpriteRenderer:
-  m_CorrespondingSourceObject: {fileID: 8518268266261273643, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
-  m_PrefabInstance: {fileID: 448675059}
-  m_PrefabAsset: {fileID: 0}
 --- !u!114 &2004004961 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1160761135607046887, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
@@ -9328,14 +9328,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mainCamera: {fileID: 1613816022}
   playerOverlayCamera: {fileID: 705081223}
-  playerAnimator: {fileID: 2004004937}
+  playerAnimator: {fileID: 448675060}
   playerTransform: {fileID: 2004004907}
   playerCC: {fileID: 448675061}
   boundaryClamp: {fileID: 2004004936}
   playerInputHandler: {fileID: 2004004961}
   playerController: {fileID: 2004004919}
   hudManager: {fileID: 2021292074}
-  playerSpriteRenderer: {fileID: 2004004950}
+  playerSpriteRenderer: {fileID: 448675062}
   playerSorroundLight: {fileID: 1358398399}
   playerSurroundLightFadeDuration: 2
   dialoguePlayerPlatform: {fileID: 1615518505}
@@ -9417,7 +9417,7 @@ MonoBehaviour:
   introSequenceManager: {fileID: 2021292073}
   ringManager: {fileID: 2021292069}
   playerTransformFront: {fileID: 1041187257}
-  playerAnimator: {fileID: 2004004937}
+  playerAnimator: {fileID: 448675060}
   startPositionX: 2
   testPositionX: 0
   testPositionZ: 0

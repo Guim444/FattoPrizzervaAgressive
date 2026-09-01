@@ -64,7 +64,7 @@ public class PlayerMovement : MonoBehaviour
         _input = GetComponent<PlayerInputHandler>();
         _playerController = GetComponent<PlayerController>();
         _animations = GetComponent<PlayerAnimations>();
-        _spriteRenderer = GetComponent<SpriteRenderer>();
+        _spriteRenderer = GetComponentInChildren<SpriteRenderer>(true);
 
         _verticalVelocity = -2f;
     }

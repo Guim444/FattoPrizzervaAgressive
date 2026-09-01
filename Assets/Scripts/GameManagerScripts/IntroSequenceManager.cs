@@ -157,8 +157,11 @@ public class IntroSequenceManager : MonoBehaviour
 
     private void Awake()
     {
+        if (playerAnimator == null && playerTransform != null)
+            playerAnimator = playerTransform.GetComponentInChildren<Animator>(true);
+
         if (playerSpriteRenderer == null && playerTransform != null)
-            playerSpriteRenderer = playerTransform.GetComponentInChildren<SpriteRenderer>();
+            playerSpriteRenderer = playerTransform.GetComponentInChildren<SpriteRenderer>(true);
 
         if (playerController == null && playerTransform != null)
             playerController = playerTransform.GetComponent<PlayerController>();
