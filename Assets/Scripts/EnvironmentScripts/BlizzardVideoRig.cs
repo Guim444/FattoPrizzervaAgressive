@@ -6,7 +6,7 @@ using UnityEngine.Video;
 /// <summary>
 /// Referencias de escena para los VideoPlayers y quads de la ventisca.
 ///
-/// Este componente debe vivir en un objeto que permanezca activo (por ejemplo CAM_Player),
+/// Este componente debe vivir en un objeto que permanezca activo (por ejemplo CAM_Main),
 /// mientras que <see cref="playersRoot"/> puede empezar desactivado. De este modo el rig
 /// puede registrarse aunque las superficies de vídeo todavía estén ocultas.
 /// </summary>
@@ -183,7 +183,7 @@ public sealed class BlizzardVideoRig : MonoBehaviour
     public static BlizzardVideoRig ActiveRig { get; private set; }
 
     [Header("Jerarquía")]
-    [Tooltip("Root que contiene todos los players y quads. Debe ser hijo de CAM_Player y distinto del objeto que contiene este componente.")]
+    [Tooltip("Root que contiene todos los players y quads. Debe seguir a la cámara de ventisca (CAM_Main en GameplayScene) y ser distinto del objeto que contiene este componente.")]
     [SerializeField] private GameObject playersRoot;
 
     [Header("Estados (0=W1, 1=W2, 2=W3, 3=W4)")]
@@ -285,11 +285,9 @@ public sealed class BlizzardVideoRig : MonoBehaviour
                 ValidatePlayer(idlePlayer, $"W{i + 1} idle");
 
             VideoPlayer transitionPlayer = GetTransitionPlayer(i);
-            if (i == 0 && transitionPlayer != null)
-                Debug.LogWarning($"[{nameof(BlizzardVideoRig)}] W1 no necesita VideoPlayer de transición.", this);
-            else if (i > 0 && transitionPlayer == null)
+            if (transitionPlayer == null)
                 Debug.LogWarning($"[{nameof(BlizzardVideoRig)}] W{i + 1} no tiene VideoPlayer de transición.", this);
-            else if (transitionPlayer != null)
+            else
                 ValidatePlayer(transitionPlayer, $"W{i + 1} transición");
         }
     }

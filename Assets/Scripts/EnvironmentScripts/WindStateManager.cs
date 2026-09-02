@@ -17,7 +17,7 @@ using UnityEngine.Video;
 /// - Al cambiar de estado se pausa el anterior, se reproduce el activo y se actualiza el alpha.
 ///
 /// Estructura por tecla:
-///   Tecla 1 → IdleLoop_Fast              (snap inmediato, sin transición)
+///   Tecla 1 → Transition_1 → IdleLoop_Fast (si se solicita transición)
 ///   Tecla 2 → Transition_2 → IdleLoop_2
 ///   Tecla 3 → Transition_3 → IdleLoop_3
 ///   Tecla 4 → Transition_4 → IdleLoop_4
@@ -114,6 +114,7 @@ public class WindStateManager : MonoBehaviour
     private bool _hasPendingWindRequest;
     private WindPreset _pendingWindPreset;
     private bool _pendingWindRequestUsesTransition;
+    private bool _pendingWindRequestForcesTransition;
     private float _pendingWindCrossFadeOverride = -1f;
 
     private int   _activeIdleIndex       = -1;
@@ -218,7 +219,11 @@ public class WindStateManager : MonoBehaviour
 
         if (!EnsureVideoRig(logWarning: false))
         {
-            QueuePendingWindRequest(preset, useTransition: false, crossFadeOverride: -1f);
+            QueuePendingWindRequest(
+                preset,
+                useTransition: false,
+                forceTransition: false,
+                crossFadeOverride: -1f);
             return;
         }
 
@@ -238,10 +243,13 @@ public class WindStateManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Teclas 2-4: muestra transición y, al cumplirse su duración,
+    /// Muestra la transición del estado y, al cumplirse su duración,
     /// cambia al idle. No toca clip, no llama Prepare(), no llama Stop().
     /// </summary>
-    public void TransitionTo(WindPreset preset, float _crossFadeOverride = -1f)
+    public void TransitionTo(
+        WindPreset preset,
+        float _crossFadeOverride = -1f,
+        bool forceTransition = false)
     {
         int idx = (int)preset;
         if (!IsValidStateIndex(idx)) return;
@@ -251,16 +259,19 @@ public class WindStateManager : MonoBehaviour
             QueuePendingWindRequest(
                 preset,
                 useTransition: true,
+                forceTransition: forceTransition,
                 crossFadeOverride: _crossFadeOverride);
             return;
         }
 
         ClearPendingWindRequest();
 
-        if (idx == _currentStateIndex && _activeTransitionIndex < 0)
+        if (!forceTransition &&
+            idx == _currentStateIndex &&
+            _activeTransitionIndex < 0)
         {
-            // Si el manager externo llama TransitionTo(W1) en vez de SnapToState(W1),
-            // no salimos sin hacer nada: re-aplicamos el idle visible.
+            // Una petición repetida conserva el idle actual. La intro puede forzar
+            // la transición aunque W1 ya se haya seleccionado durante Start().
             ShowIdle(idx);
             return;
         }
@@ -273,11 +284,9 @@ public class WindStateManager : MonoBehaviour
 
         VideoPlayer transition = GetTransitionPlayer(idx);
 
-        // W1 es siempre idle directo aunque el rig tenga por accidente una transición asignada.
-        bool isInitialIdleState = idx == (int)WindPreset.W1_MaxIdle;
-
-        // Si no hay transición asignada, o es W1, ir directo al idle.
-        if (isInitialIdleState || !HasVideoSource(transition))
+        // Todos los estados, incluido W1, usan su transición cuando existe.
+        // Si la escena todavía no la tiene asignada, conservamos el fallback al idle.
+        if (!HasVideoSource(transition))
         {
             ShowIdle(idx);
             return;
@@ -306,11 +315,13 @@ public class WindStateManager : MonoBehaviour
     private void QueuePendingWindRequest(
         WindPreset preset,
         bool useTransition,
+        bool forceTransition,
         float crossFadeOverride)
     {
         _hasPendingWindRequest = true;
         _pendingWindPreset = preset;
         _pendingWindRequestUsesTransition = useTransition;
+        _pendingWindRequestForcesTransition = forceTransition;
         _pendingWindCrossFadeOverride = crossFadeOverride;
     }
 
@@ -321,11 +332,12 @@ public class WindStateManager : MonoBehaviour
 
         WindPreset preset = _pendingWindPreset;
         bool useTransition = _pendingWindRequestUsesTransition;
+        bool forceTransition = _pendingWindRequestForcesTransition;
         float crossFadeOverride = _pendingWindCrossFadeOverride;
         ClearPendingWindRequest();
 
         if (useTransition)
-            TransitionTo(preset, crossFadeOverride);
+            TransitionTo(preset, crossFadeOverride, forceTransition);
         else
             SnapToState(preset);
     }
@@ -333,7 +345,28 @@ public class WindStateManager : MonoBehaviour
     private void ClearPendingWindRequest()
     {
         _hasPendingWindRequest = false;
+        _pendingWindRequestForcesTransition = false;
         _pendingWindCrossFadeOverride = -1f;
+    }
+
+    /// <summary>
+    /// Solicita la misma transición en todos los gestores activos.
+    /// Se usa en la intro para reproducir la transición de W1 aunque Start()
+    /// ya haya dejado seleccionado su idle.
+    /// </summary>
+    public static int TransitionAllTo(
+        WindPreset preset,
+        bool forceTransition = false,
+        float crossFadeOverride = -1f)
+    {
+        WindStateManager[] managers = Object.FindObjectsByType<WindStateManager>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        foreach (WindStateManager manager in managers)
+            manager.TransitionTo(preset, crossFadeOverride, forceTransition);
+
+        return managers.Length;
     }
 
     public static int ActivateAllVideoPlayersRoots()

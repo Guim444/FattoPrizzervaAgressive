@@ -231,6 +231,12 @@ public class IntroSequenceManager : MonoBehaviour
     {
         if (activateBlizzardOnIntro)
         {
+            // W1 se selecciona como idle inicial durante Start(). Forzamos aquí
+            // su transición para que, si está asignada en el rig, se reproduzca
+            // antes de integrar los quads idle mediante el crossfade habitual.
+            WindStateManager.TransitionAllTo(
+                WindStateManager.WindPreset.W1_MaxIdle,
+                forceTransition: true);
             ActivateIntroBlizzard();
             WindStateManager.FadeInAllVideoPlayers(introBlizzardFadeDuration);
         }
