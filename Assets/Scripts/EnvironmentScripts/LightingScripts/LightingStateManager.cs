@@ -58,6 +58,20 @@ public class LightingStateManager : MonoBehaviour
     [Tooltip("Segundos entre pulsar tecla 4 y el snap a luces azules. El cielo y los objetos cambian al instante.")]
     [SerializeField] private float blueLightsDelay = 2f;
 
+    [Header("Godrays")]
+    [Tooltip("Primer GameObject de Godrays (en LightingScene).")]
+    [SerializeField] private GameObject godRay1;
+    [Tooltip("Segundo GameObject de Godrays (en LightingScene).")]
+    [SerializeField] private GameObject godRay2;
+    [Tooltip("Si está marcado, desactiva los GameObjects en Start además de poner su escala a 0.")]
+    [SerializeField] private bool deactivateGodRaysOnStart = true;
+    [Tooltip("Tiempo de espera antes de comenzar el aumento de escala tras cruzar la puerta (en segundos).")]
+    [SerializeField, Min(0f)] private float godRaysDelay = 0f;
+    [Tooltip("Tiempo que tarda la escala en aumentar de 0 a 1 (en segundos).")]
+    [SerializeField, Min(0.01f)] private float godRaysScaleDuration = 1.5f;
+    [Tooltip("Escala objetivo final (por defecto 1, 1, 1).")]
+    [SerializeField] private Vector3 godRaysTargetScale = Vector3.one;
+
     [Header("Play Mode Test")]
     [SerializeField] private LightingState _previewState;
     [SerializeField] private bool enableKeyboardShortcuts = true;
@@ -66,6 +80,8 @@ public class LightingStateManager : MonoBehaviour
     private int _currentSkyIndex = -1;
     private Coroutine _activeTransition;
     private Coroutine _blueTransitionCoroutine;
+    private Coroutine _godRaysCoroutine;
+    private bool _godRaysTriggered;
     private readonly List<GameObject> _activatedByManager = new List<GameObject>();
     private readonly Dictionary<Light, FireVisualScript> _fireVisualsByLight =
         new Dictionary<Light, FireVisualScript>();
@@ -76,6 +92,123 @@ public class LightingStateManager : MonoBehaviour
             lightmapStateManager = GetComponent<LightmapStateManager>();
 
         CacheFireVisuals();
+    }
+
+    private void Start()
+    {
+        InitGodRays();
+    }
+
+    private void InitGodRays()
+    {
+        if (godRay1 != null)
+        {
+            godRay1.transform.localScale = Vector3.zero;
+            if (deactivateGodRaysOnStart)
+                godRay1.SetActive(false);
+        }
+
+        if (godRay2 != null)
+        {
+            godRay2.transform.localScale = Vector3.zero;
+            if (deactivateGodRaysOnStart)
+                godRay2.SetActive(false);
+        }
+    }
+
+    /// <summary>
+    /// Activa los Godrays en todos los gestores de iluminación activos.
+    /// </summary>
+    public static void TriggerAllGodRays()
+    {
+        LightingStateManager[] managers = Object.FindObjectsByType<LightingStateManager>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        foreach (var manager in managers)
+        {
+            manager.TriggerGodRays();
+        }
+    }
+
+    /// <summary>
+    /// Inicia la activación y aumento de escala de los Godrays tras el retardo configurado.
+    /// </summary>
+    public void TriggerGodRays()
+    {
+        if (_godRaysTriggered) return;
+        _godRaysTriggered = true;
+
+        if (_godRaysCoroutine != null)
+            StopCoroutine(_godRaysCoroutine);
+
+        _godRaysCoroutine = StartCoroutine(AnimateGodRaysRoutine());
+    }
+
+    /// <summary>
+    /// Restablece los Godrays al estado inicial (escala cero).
+    /// </summary>
+    public void ResetGodRays()
+    {
+        if (_godRaysCoroutine != null)
+        {
+            StopCoroutine(_godRaysCoroutine);
+            _godRaysCoroutine = null;
+        }
+
+        _godRaysTriggered = false;
+        InitGodRays();
+    }
+
+    private IEnumerator AnimateGodRaysRoutine()
+    {
+        if (godRay1 != null)
+        {
+            godRay1.transform.localScale = Vector3.zero;
+            godRay1.SetActive(true);
+        }
+
+        if (godRay2 != null)
+        {
+            godRay2.transform.localScale = Vector3.zero;
+            godRay2.SetActive(true);
+        }
+
+        if (godRaysDelay > 0f)
+            yield return new WaitForSeconds(godRaysDelay);
+
+        if (godRay1 != null && !godRay1.activeSelf)
+            godRay1.SetActive(true);
+
+        if (godRay2 != null && !godRay2.activeSelf)
+            godRay2.SetActive(true);
+
+        float duration = Mathf.Max(0.001f, godRaysScaleDuration);
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float smoothT = Mathf.SmoothStep(0f, 1f, t);
+            Vector3 currentScale = Vector3.Lerp(Vector3.zero, godRaysTargetScale, smoothT);
+
+            if (godRay1 != null)
+                godRay1.transform.localScale = currentScale;
+
+            if (godRay2 != null)
+                godRay2.transform.localScale = currentScale;
+
+            yield return null;
+        }
+
+        if (godRay1 != null)
+            godRay1.transform.localScale = godRaysTargetScale;
+
+        if (godRay2 != null)
+            godRay2.transform.localScale = godRaysTargetScale;
+
+        _godRaysCoroutine = null;
     }
 
     private void Update()

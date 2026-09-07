@@ -4,6 +4,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+
 [CustomEditor(typeof(LightingStateManager))]
 public class LightingStateManagerEditor : Editor
 {
@@ -29,6 +30,9 @@ public class LightingStateManagerEditor : Editor
 
         if (GUILayout.Button("→ Azul (snap)"))
             manager.SnapToState(LightingStateManager.LightingState.Blue);
+
+        if (GUILayout.Button("→ Disparar Godrays"))
+            manager.TriggerGodRays();
 
         if (!Application.isPlaying)
             EditorGUILayout.HelpBox("Entra en Play Mode para usar los botones.", MessageType.Info);

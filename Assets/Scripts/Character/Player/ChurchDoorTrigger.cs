@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class ChurchDoorTrigger : MonoBehaviour
@@ -22,7 +23,6 @@ public class ChurchDoorTrigger : MonoBehaviour
     [SerializeField] private string dialogueSceneName = "DialogueScene";
     [Tooltip("Escena que permanece activa y contiene DialogueLayoutManager.")]
     [SerializeField] private string lightingSceneName = "LightingScene";
-
 
     [SerializeField] private GameObject _blizzardVideos;
 
@@ -57,5 +57,10 @@ public class ChurchDoorTrigger : MonoBehaviour
             autoMoveCameraY,
             dialogueSceneName,
             lightingSceneName);
+
+        if (triggered)
+        {
+            LightingStateManager.TriggerAllGodRays();
+        }
     }
 }
