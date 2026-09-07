@@ -2573,7 +2573,7 @@ MonoBehaviour:
   secondAutoMoveDuration: 10
   rioTutteStandard: {fileID: 1209652340}
   rioTutteTransformation: {fileID: 2123647840}
-  autoMoveCameraY: 5
+  autoMoveCameraY: 6
   dialogueSceneName: DialogueScene
   lightingSceneName: LightingScene
   _blizzardVideos: {fileID: 857668447}

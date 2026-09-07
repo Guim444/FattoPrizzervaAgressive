@@ -36,16 +36,11 @@ public class CameraMovement : MonoBehaviour
     [SerializeField] private float rotationZ = 359.892f;
 
     public bool zoomed;
-
-    private float _baseX;       // reference X from which the zoom operates
     private float xZoomTarget;
     private float xVel;
     private float zVel;
     private float _yVel;
     private Camera _cam;
-
-    // ── Lifecycle ────────────────────────────────────────────────────────────
-
     private void Awake()
     {
         _cam = GetComponent<Camera>();
@@ -65,15 +60,12 @@ public class CameraMovement : MonoBehaviour
         transform.position = new Vector3(targetX, targetY, targetZ);
         transform.rotation = Quaternion.Euler(rotationX, rotationY, rotationZ);
 
-        _baseX      = targetX;
         xZoomTarget = targetX;
         xVel  = 0f;
         zVel  = 0f;
         _yVel = 0f;
         zoomed = false;
     }
-
-    // ── Update ───────────────────────────────────────────────────────────────
 
     private void Update()
     {
@@ -104,8 +96,6 @@ public class CameraMovement : MonoBehaviour
             Zoom(-1);
     }
 
-    // ── API ──────────────────────────────────────────────────────────────────
-
     public void Zoom(int zoom)
     {
         xZoomTarget += zoomDistance * zoom;
@@ -115,7 +105,6 @@ public class CameraMovement : MonoBehaviour
     public void TeleportTo(Vector3 position)
     {
         transform.position = position;
-        _baseX      = position.x;
         xZoomTarget = position.x;
         xVel  = 0f;
         zVel  = 0f;
@@ -123,8 +112,6 @@ public class CameraMovement : MonoBehaviour
         combatY = position.y;
         zoomed  = false;
     }
-
-    // ── Helpers ──────────────────────────────────────────────────────────────
 
     private float GetTargetZ()
     {
