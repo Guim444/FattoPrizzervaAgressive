@@ -2576,6 +2576,7 @@ MonoBehaviour:
   autoMoveCameraY: 5
   dialogueSceneName: DialogueScene
   lightingSceneName: LightingScene
+  _blizzardVideos: {fileID: 857668447}
   playerLayer:
     serializedVersion: 2
     m_Bits: 8
@@ -11027,7 +11028,7 @@ MonoBehaviour:
   introPlayerFadeDuration: 10
   autoWalkEnabled: 1
   autoWalkSpeed: 3
-  introControlledWalkSpeed: 8
+  introControlledWalkSpeed: 3
   introPlayerZ: 0
   blinkQuarterMarkers:
   - {fileID: 1098977468}

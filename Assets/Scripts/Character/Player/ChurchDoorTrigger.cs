@@ -23,6 +23,9 @@ public class ChurchDoorTrigger : MonoBehaviour
     [Tooltip("Escena que permanece activa y contiene DialogueLayoutManager.")]
     [SerializeField] private string lightingSceneName = "LightingScene";
 
+
+    [SerializeField] private GameObject _blizzardVideos;
+
     [Header("Detection")]
     [SerializeField] private LayerMask playerLayer;
 
@@ -32,6 +35,11 @@ public class ChurchDoorTrigger : MonoBehaviour
     {
         if (triggered) return;
         if ((playerLayer.value & (1 << other.gameObject.layer)) == 0) return;
+
+        if (_blizzardVideos)
+        {
+            _blizzardVideos.transform.parent = null;
+        }  
 
         if (introSequenceManager == null)
         {

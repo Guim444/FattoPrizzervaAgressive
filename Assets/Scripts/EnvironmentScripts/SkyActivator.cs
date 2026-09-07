@@ -11,9 +11,13 @@ public class SkyActivator : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (_active || _skyHightLightEffect == null) return;
+        if (_active) return;
 
-        _skyHightLightEffect.enabled = true;
+        if(_skyHightLightEffect != null)
+        {
+            _skyHightLightEffect.enabled = true;          
+        }
+
         _active = true;
     }
 }
