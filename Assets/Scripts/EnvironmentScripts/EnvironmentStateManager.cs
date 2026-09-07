@@ -25,6 +25,10 @@ public class EnvironmentStateManager : MonoBehaviour
     [Tooltip("Activa o pausa los VideoPlayers de ventisca.")]
     [SerializeField] private bool runBlizzardVideos = true;
 
+    [Header("Door Trigger — Brazier")]
+    [Tooltip("Brazier con fuego que se desactivará al entrar por el trigger de la puerta.")]
+    [SerializeField] private GameObject doorBrazier;
+
     [Header("Performance Auto Collect")]
     [SerializeField] private bool autoCollectPerformanceTargets = true;
 
@@ -195,19 +199,36 @@ public class EnvironmentStateManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Desactiva el brazier de la puerta.
+    /// </summary>
+    public static void DeactivateAllDoorBraziers()
+    {
+        EnvironmentStateManager manager = Object.FindFirstObjectByType<EnvironmentStateManager>();
+        if (manager != null)
+            manager.DeactivateDoorBrazier();
+    }
+
+    public void DeactivateDoorBrazier()
+    {
+        if (doorBrazier != null)
+            doorBrazier.SetActive(false);
+    }
+
     private void ApplyFireAnimationToggle(bool shouldRun)
     {
         if (_fireVideoReplacements != null)
         {
             foreach (var replacement in _fireVideoReplacements)
-                if (replacement != null) replacement.SetPlaybackEnabled(shouldRun);
+                if (replacement != null && replacement.gameObject.activeInHierarchy)
+                    replacement.SetPlaybackEnabled(shouldRun);
         }
 
         if (_fireVideoPlayers != null)
         {
             foreach (var player in _fireVideoPlayers)
             {
-                if (player == null) continue;
+                if (player == null || !player.gameObject.activeInHierarchy) continue;
 
                 if (shouldRun)
                 {
@@ -226,13 +247,15 @@ public class EnvironmentStateManager : MonoBehaviour
         if (_fireAnimators != null)
         {
             foreach (var animator in _fireAnimators)
-                if (animator != null) animator.enabled = shouldRun;
+                if (animator != null && animator.gameObject.activeInHierarchy)
+                    animator.enabled = shouldRun;
         }
 
         if (_fireVisualScripts != null)
         {
             foreach (var fire in _fireVisualScripts)
-                if (fire != null) fire.SetAnimationPlaybackEnabled(shouldRun);
+                if (fire != null && fire.gameObject.activeInHierarchy)
+                    fire.SetAnimationPlaybackEnabled(shouldRun);
         }
     }
 
