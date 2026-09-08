@@ -184,7 +184,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   shots:
   - targetPosition: {fileID: 1380970478}
-    moveDuration: 3.5
+    moveDuration: 3
     moveCurve:
       serializedVersion: 2
       m_Curve:
