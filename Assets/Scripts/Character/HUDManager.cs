@@ -177,10 +177,8 @@ public class HUDManager : MonoBehaviour
             return;
         }
 
-        Vector3 currentCameraPosition = cameraMovement.transform.position;
+        cameraMovement.PrepareSmoothTransition(freeMoveStartCameraY);
         ActivateCameraMovement();
-        cameraMovement.TeleportTo(currentCameraPosition);
-        cameraMovement.combatY = freeMoveStartCameraY;
 
         if (_hasCameraBlendBeforeDialogue && cinemachineBrain != null)
         {

@@ -14,6 +14,7 @@ public class CameraMovement : MonoBehaviour
     public float ySmoothTime = 0.4f;
 
     [Header("Zoom X")]
+    public bool enableZoom = true;
     public float zoomDistance;
     [SerializeField] private float zoomInThreshold  =  0.5f;
     [SerializeField] private float zoomOutThreshold = -0.5f;
@@ -30,6 +31,7 @@ public class CameraMovement : MonoBehaviour
     public float yOffset      = 1.5f;
 
     [Header("Camera")]
+    [SerializeField] private float defaultFieldOfView = 45f;
     [SerializeField] private float farClipPlane = 40f;
     [SerializeField] private float rotationX = 6.234f;
     [SerializeField] private float rotationY = 89.006f;
@@ -40,17 +42,68 @@ public class CameraMovement : MonoBehaviour
     private float xVel;
     private float zVel;
     private float _yVel;
+    private float _fovVel;
     private Camera _cam;
+    private float _initialTestTargetX = -16.04684f;
+    private bool _hasInitialTestTargetX;
+    private bool _preserveTransformOnNextEnable;
+
     private void Awake()
     {
         _cam = GetComponent<Camera>();
         if (_cam != null)
+        {
             _cam.farClipPlane = farClipPlane;
+            if (_cam.fieldOfView > 1f)
+                defaultFieldOfView = _cam.fieldOfView;
+        }
+
+        CacheInitialTestPosition();
+    }
+
+    private void CacheInitialTestPosition()
+    {
+        if (player != null && !_hasInitialTestTargetX)
+        {
+            _initialTestTargetX = player.position.x + startXOffset;
+            _hasInitialTestTargetX = true;
+        }
+    }
+
+    public void PrepareSmoothTransition(float newCombatY)
+    {
+        combatY = newCombatY;
+        _preserveTransformOnNextEnable = true;
+
+        CacheInitialTestPosition();
+        xZoomTarget = _initialTestTargetX;
+
+        xVel = 0f;
+        zVel = 0f;
+        _yVel = 0f;
+        _fovVel = 0f;
+        zoomed = false;
+        enableZoom = false;
     }
 
     private void OnEnable()
     {
         if (player == null) return;
+
+        CacheInitialTestPosition();
+
+        if (_preserveTransformOnNextEnable)
+        {
+            _preserveTransformOnNextEnable = false;
+            xZoomTarget = _initialTestTargetX;
+            xVel = 0f;
+            zVel = 0f;
+            _yVel = 0f;
+            _fovVel = 0f;
+            zoomed = false;
+            enableZoom = false;
+            return;
+        }
 
         // Immediate snap to position relative to player
         float targetX = player.position.x + startXOffset;
@@ -60,11 +113,16 @@ public class CameraMovement : MonoBehaviour
         transform.position = new Vector3(targetX, targetY, targetZ);
         transform.rotation = Quaternion.Euler(rotationX, rotationY, rotationZ);
 
+        if (_cam != null)
+            _cam.fieldOfView = defaultFieldOfView;
+
         xZoomTarget = targetX;
         xVel  = 0f;
         zVel  = 0f;
         _yVel = 0f;
+        _fovVel = 0f;
         zoomed = false;
+        enableZoom = true;
     }
 
     private void Update()
@@ -85,11 +143,31 @@ public class CameraMovement : MonoBehaviour
         }
 
         transform.position = new Vector3(newX, newY, newZ);
-        transform.rotation = Quaternion.Euler(rotationX, rotationY, rotationZ);
+
+        Quaternion targetRotation = Quaternion.Euler(rotationX, rotationY, rotationZ);
+        if (Quaternion.Angle(transform.rotation, targetRotation) > 0.01f)
+        {
+            float rotDamp = 1f - Mathf.Exp(-Time.deltaTime * (2.5f / st));
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotDamp);
+        }
+        else
+        {
+            transform.rotation = targetRotation;
+        }
+
+        if (_cam != null)
+        {
+            if (Mathf.Abs(_cam.fieldOfView - defaultFieldOfView) > 0.05f)
+                _cam.fieldOfView = Mathf.SmoothDamp(_cam.fieldOfView, defaultFieldOfView, ref _fovVel, st);
+            else
+                _cam.fieldOfView = defaultFieldOfView;
+        }
     }
 
     private void LateUpdate()
     {
+        if (!enableZoom) return;
+
         if (player.position.x > zoomInThreshold && !zoomed)
             Zoom(1);
         else if (player.position.x < zoomOutThreshold && zoomed)

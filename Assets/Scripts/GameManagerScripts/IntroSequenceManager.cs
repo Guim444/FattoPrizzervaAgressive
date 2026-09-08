@@ -1229,20 +1229,14 @@ public class IntroSequenceManager : MonoBehaviour
 
     private IEnumerator ReturnFromDialogueCamera()
     {
-        float blendDuration = 0f;
         if (dialogueCameraController != null)
-        {
-            blendDuration = dialogueCameraBlendDuration;
             dialogueCameraController.DeactivateCamera();
-        }
-
-        if (blendDuration > 0f)
-            yield return new WaitForSecondsRealtime(blendDuration);
 
         hudManager?.CompleteChurchTestCameraTransition();
         ApplyEnvironmentPhase(3);
         ResumePlayerAfterChurchSequence();
         _dialogueReturnCoroutine = null;
+        yield break;
     }
 
     private void EnterChurchLighting(string lightingSceneName)
