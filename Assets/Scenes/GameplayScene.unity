@@ -8600,9 +8600,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 2004004907}
-  startXOffset: 86
   smoothTime: 0.5
   ySmoothTime: 0.4
+  enableZoom: 1
   zoomDistance: 3.9
   zoomInThreshold: 0
   zoomOutThreshold: -2
@@ -8613,6 +8613,7 @@ MonoBehaviour:
   combatY: 4
   followPlayerY: 0
   yOffset: 2.4
+  defaultFieldOfView: 45
   farClipPlane: 200
   rotationX: 1
   rotationY: 89.006
@@ -11071,6 +11072,7 @@ MonoBehaviour:
   startPositionX: 2
   testPositionX: 0
   testPositionZ: 0
+  freeMoveStartCameraX: -14
   freeMoveStartCameraY: 3
   cinemachineZoomController: {fileID: 685871263}
   cinemachineBrain: {fileID: 1613816023}

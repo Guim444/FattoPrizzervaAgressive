@@ -47,6 +47,9 @@ public class HUDManager : MonoBehaviour
     private float combatStartPositionZ = -2f;
 
     [Header("Configuration — Camera")] [SerializeField]
+    private float freeMoveStartCameraX = -16.05f;
+
+    [SerializeField]
     private float freeMoveStartCameraY = 1.5f;
 
     [SerializeField] private CinemachineZoomController cinemachineZoomController;
@@ -177,7 +180,7 @@ public class HUDManager : MonoBehaviour
             return;
         }
 
-        cameraMovement.PrepareSmoothTransition(freeMoveStartCameraY);
+        cameraMovement.PrepareSmoothTransition(freeMoveStartCameraX, freeMoveStartCameraY);
         ActivateCameraMovement();
 
         if (_hasCameraBlendBeforeDialogue && cinemachineBrain != null)
@@ -231,8 +234,6 @@ public class HUDManager : MonoBehaviour
         PrepareDirectGameplayEntry();
         introSequenceManager?.RestoreOriginalAnimator();
         Time.timeScale = 1f;
-        cameraMovement.combatY = freeMoveStartCameraY;
-        ActivateCameraMovement();
         playerTransformFront.SetActive(true);
         ringManager.enabled = false;
         playerBoundary.enabled = false;
@@ -240,6 +241,8 @@ public class HUDManager : MonoBehaviour
         OutsideChurch.SetActive(true);
         enemyRio.SetActive(false);
         MoveTestPlayerToPosition(testPositionX, testPositionZ);
+        ActivateCameraMovement();
+        cameraMovement.SnapToTestPosition(freeMoveStartCameraX, freeMoveStartCameraY);
         HidePanel();
     }
 

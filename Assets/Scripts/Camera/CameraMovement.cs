@@ -5,10 +5,6 @@ public class CameraMovement : MonoBehaviour
     [Header("Target")]
     public Transform player;
 
-    [Header("Initial Position")]
-    [Tooltip("X offset relative to player on activation (e.g.: -11 sets camera to X = player.x - 11)")]
-    [SerializeField] private float startXOffset = -11f;
-
     [Header("Smoothness")]
     public float smoothTime  = 0.3f;
     public float ySmoothTime = 0.4f;
@@ -44,8 +40,7 @@ public class CameraMovement : MonoBehaviour
     private float _yVel;
     private float _fovVel;
     private Camera _cam;
-    private float _initialTestTargetX = -16.04684f;
-    private bool _hasInitialTestTargetX;
+    private float _pendingTargetX;
     private bool _preserveTransformOnNextEnable;
 
     private void Awake()
@@ -57,26 +52,15 @@ public class CameraMovement : MonoBehaviour
             if (_cam.fieldOfView > 1f)
                 defaultFieldOfView = _cam.fieldOfView;
         }
-
-        CacheInitialTestPosition();
     }
 
-    private void CacheInitialTestPosition()
+    public void PrepareSmoothTransition(float targetX, float targetY)
     {
-        if (player != null && !_hasInitialTestTargetX)
-        {
-            _initialTestTargetX = player.position.x + startXOffset;
-            _hasInitialTestTargetX = true;
-        }
-    }
-
-    public void PrepareSmoothTransition(float newCombatY)
-    {
-        combatY = newCombatY;
+        combatY = targetY;
+        _pendingTargetX = targetX;
         _preserveTransformOnNextEnable = true;
 
-        CacheInitialTestPosition();
-        xZoomTarget = _initialTestTargetX;
+        xZoomTarget = targetX;
 
         xVel = 0f;
         zVel = 0f;
@@ -86,16 +70,34 @@ public class CameraMovement : MonoBehaviour
         enableZoom = false;
     }
 
+    public void SnapToTestPosition(float targetX, float targetY)
+    {
+        combatY = targetY;
+        float targetZ = GetTargetZ();
+
+        transform.position = new Vector3(targetX, targetY, targetZ);
+        transform.rotation = Quaternion.Euler(rotationX, rotationY, rotationZ);
+
+        if (_cam != null)
+            _cam.fieldOfView = defaultFieldOfView;
+
+        xZoomTarget = targetX;
+        xVel  = 0f;
+        zVel  = 0f;
+        _yVel = 0f;
+        _fovVel = 0f;
+        zoomed = false;
+        enableZoom = true;
+    }
+
     private void OnEnable()
     {
         if (player == null) return;
 
-        CacheInitialTestPosition();
-
         if (_preserveTransformOnNextEnable)
         {
             _preserveTransformOnNextEnable = false;
-            xZoomTarget = _initialTestTargetX;
+            xZoomTarget = _pendingTargetX;
             xVel = 0f;
             zVel = 0f;
             _yVel = 0f;
@@ -106,7 +108,7 @@ public class CameraMovement : MonoBehaviour
         }
 
         // Immediate snap to position relative to player
-        float targetX = player.position.x + startXOffset;
+        float targetX = player.position.x;
         float targetY = followPlayerY ? player.position.y + yOffset : combatY;
         float targetZ = GetTargetZ();
 

@@ -16,23 +16,21 @@ public sealed class BlizzardVideoRig : MonoBehaviour
     [Serializable]
     public sealed class SurfaceBinding
     {
+        private static readonly int OpacityPropertyId = Shader.PropertyToID("_Opacity");
+        private static readonly int BaseColorPropertyId = Shader.PropertyToID("_BaseColor");
+        private static readonly int ColorPropertyId = Shader.PropertyToID("_Color");
+        private static readonly int SurfacePropertyId = Shader.PropertyToID("_Surface");
+
         [Tooltip("Renderer del quad que muestra este vídeo.")]
         [SerializeField] private Renderer targetRenderer;
 
         [Tooltip("Multiplicador respecto a la opacidad del estado. Principal=1; copias de fondo=0.35.")]
         [SerializeField, Range(0f, 1f)] private float opacityMultiplier = 1f;
 
-        [Tooltip("Propiedad float opcional para controlar opacidad. Se usa antes que _BaseColor/_Color.")]
-        [SerializeField] private string opacityProperty = "_Opacity";
-
-        [Tooltip("Desactiva el Renderer cuando la opacidad llega a cero.")]
-        [SerializeField] private bool disableRendererWhenHidden = true;
-
         [NonSerialized] private MaterialPropertyBlock _propertyBlock;
         [NonSerialized] private bool _baseColorCached;
         [NonSerialized] private Color _baseColor = Color.white;
         [NonSerialized] private int _colorPropertyId;
-        [NonSerialized] private int _opacityPropertyId;
         [NonSerialized] private bool _usesColorProperty;
         [NonSerialized] private bool _usesOpacityProperty;
         [NonSerialized] private bool _missingOpacityPropertyReported;
@@ -53,7 +51,7 @@ public sealed class BlizzardVideoRig : MonoBehaviour
             targetRenderer.GetPropertyBlock(_propertyBlock);
 
             if (_usesOpacityProperty)
-                _propertyBlock.SetFloat(_opacityPropertyId, alpha);
+                _propertyBlock.SetFloat(OpacityPropertyId, alpha);
 
             if (_usesColorProperty)
             {
@@ -64,10 +62,7 @@ public sealed class BlizzardVideoRig : MonoBehaviour
 
             targetRenderer.SetPropertyBlock(_propertyBlock);
 
-            if (disableRendererWhenHidden)
-                targetRenderer.enabled = alpha > 0.001f;
-            else if (!targetRenderer.enabled && alpha > 0.001f)
-                targetRenderer.enabled = true;
+            targetRenderer.enabled = alpha > 0.001f;
         }
 
         internal void ClearRuntimeCache()
@@ -90,26 +85,25 @@ public sealed class BlizzardVideoRig : MonoBehaviour
             if (material == null)
                 return;
 
-            if (!string.IsNullOrWhiteSpace(opacityProperty) && material.HasProperty(opacityProperty))
+            if (material.HasProperty(OpacityPropertyId))
             {
-                _opacityPropertyId = Shader.PropertyToID(opacityProperty);
                 _usesOpacityProperty = true;
             }
 
-            if (material.HasProperty("_BaseColor"))
+            if (material.HasProperty(BaseColorPropertyId))
             {
-                _colorPropertyId = Shader.PropertyToID("_BaseColor");
+                _colorPropertyId = BaseColorPropertyId;
                 _baseColor = material.GetColor(_colorPropertyId);
                 _usesColorProperty = true;
             }
-            else if (material.HasProperty("_Color"))
+            else if (material.HasProperty(ColorPropertyId))
             {
-                _colorPropertyId = Shader.PropertyToID("_Color");
+                _colorPropertyId = ColorPropertyId;
                 _baseColor = material.GetColor(_colorPropertyId);
                 _usesColorProperty = true;
             }
 
-            if (material.HasProperty("_Surface") && material.GetFloat("_Surface") < 0.5f && !_opaqueMaterialReported)
+            if (material.HasProperty(SurfacePropertyId) && material.GetFloat(SurfacePropertyId) < 0.5f && !_opaqueMaterialReported)
             {
                 _opaqueMaterialReported = true;
                 Debug.LogWarning(
@@ -211,6 +205,7 @@ public sealed class BlizzardVideoRig : MonoBehaviour
 
     private void OnDisable()
     {
+        HideAllSurfaces();
         RigUnavailable?.Invoke(this);
         if (ActiveRig == this)
             ActiveRig = null;
