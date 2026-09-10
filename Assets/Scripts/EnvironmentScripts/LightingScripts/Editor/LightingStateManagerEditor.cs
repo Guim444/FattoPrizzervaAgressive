@@ -31,8 +31,11 @@ public class LightingStateManagerEditor : Editor
         if (GUILayout.Button("→ Azul (snap)"))
             manager.SnapToState(LightingStateManager.LightingState.Blue);
 
-        if (GUILayout.Button("→ Disparar Godrays"))
-            manager.TriggerGodRays();
+        if (GUILayout.Button("→ Iluminación Iglesia (Godrays + Cielo)"))
+            manager.EnterChurch();
+
+        if (GUILayout.Button("↺ Reset Iluminación Iglesia"))
+            manager.ResetChurchLighting();
 
         if (!Application.isPlaying)
             EditorGUILayout.HelpBox("Entra en Play Mode para usar los botones.", MessageType.Info);

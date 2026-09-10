@@ -57,10 +57,5 @@ public class ChurchDoorTrigger : MonoBehaviour
             autoMoveCameraY,
             dialogueSceneName,
             lightingSceneName);
-
-        if (triggered)
-        {
-            LightingStateManager.TriggerAllGodRays();
-        }
     }
 }

@@ -1241,7 +1241,7 @@ public class IntroSequenceManager : MonoBehaviour
 
     private void EnterChurchLighting(string lightingSceneName)
     {
-        LightingStateManager.TriggerAllGodRays();
+        LightingStateManager.TriggerChurchLighting();
         EnvironmentStateManager.DeactivateAllDoorBraziers();
 
         if (!playerSorroundLight) return;

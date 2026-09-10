@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using HighlightPlus;
 using UnityEngine;
 
 /// <summary>
@@ -36,6 +37,10 @@ public class LightingStateManager : MonoBehaviour
     [Header("Sky")]
     [Tooltip("El único Animator del cielo. Comparte el mismo objeto para todos los estados.")]
     [SerializeField] private Animator skyAnimator;
+    [Tooltip("HighlightEffect del cielo (en Sky01). Se activa al entrar a la iglesia.")]
+    [SerializeField] private HighlightEffect skyHighlightEffect;
+    [Tooltip("Si está marcado, asegura que el HighlightEffect del cielo comience desactivado.")]
+    [SerializeField] private bool deactivateSkyHighlightOnStart = true;
 
     [Header("Lights Objects")]
     [Tooltip("Activo en estados 1-3 (Tapat, Radiografia, Lluna).")]
@@ -91,6 +96,7 @@ public class LightingStateManager : MonoBehaviour
         if (lightmapStateManager == null)
             lightmapStateManager = GetComponent<LightmapStateManager>();
 
+        EnsureSkyHighlightReference();
         CacheFireVisuals();
     }
 
@@ -99,8 +105,18 @@ public class LightingStateManager : MonoBehaviour
         InitGodRays();
     }
 
+    private void EnsureSkyHighlightReference()
+    {
+        if (skyHighlightEffect == null && skyAnimator != null)
+            skyHighlightEffect = skyAnimator.GetComponent<HighlightEffect>();
+    }
+
     private void InitGodRays()
     {
+        EnsureSkyHighlightReference();
+        if (deactivateSkyHighlightOnStart && skyHighlightEffect != null)
+            skyHighlightEffect.enabled = false;
+
         if (godRay1 != null)
         {
             godRay1.transform.localScale = Vector3.zero;
@@ -117,9 +133,9 @@ public class LightingStateManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Activa los Godrays en todos los gestores de iluminación activos.
+    /// Activa la iluminación de la iglesia (cielo y Godrays) en todos los gestores activos con una única búsqueda.
     /// </summary>
-    public static void TriggerAllGodRays()
+    public static void TriggerChurchLighting()
     {
         LightingStateManager[] managers = Object.FindObjectsByType<LightingStateManager>(
             FindObjectsInactive.Include,
@@ -127,15 +143,18 @@ public class LightingStateManager : MonoBehaviour
 
         foreach (var manager in managers)
         {
-            manager.TriggerGodRays();
+            manager.EnterChurch();
         }
     }
 
     /// <summary>
-    /// Inicia la activación y aumento de escala de los Godrays tras el retardo configurado.
+    /// Aplica todos los cambios de iluminación al entrar a la iglesia: activa el cielo y anima los Godrays.
     /// </summary>
-    public void TriggerGodRays()
+    public void EnterChurch()
     {
+        if (skyHighlightEffect != null)
+            skyHighlightEffect.enabled = true;
+
         if (_godRaysTriggered) return;
         _godRaysTriggered = true;
 
@@ -146,9 +165,9 @@ public class LightingStateManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Restablece los Godrays al estado inicial (escala cero).
+    /// Restablece la iluminación de la iglesia al estado inicial (Godrays a escala cero y cielo desactivado).
     /// </summary>
-    public void ResetGodRays()
+    public void ResetChurchLighting()
     {
         if (_godRaysCoroutine != null)
         {
