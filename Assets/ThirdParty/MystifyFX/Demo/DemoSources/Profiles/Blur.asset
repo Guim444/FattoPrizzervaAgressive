@@ -38,7 +38,7 @@ MonoBehaviour:
   lutIntensity: 1
   tintGradient:
     serializedVersion: 2
-    key0: {r: 0.08962262, g: 0.29354432, b: 1, a: 0.039215688}
+    key0: {r: 0.0002587727, g: 0.0003647209, b: 0.0007314641, a: 0.039215688}
     key1: {r: 1, g: 1, b: 1, a: 0.039215688}
     key2: {r: 0, g: 0, b: 0, a: 0}
     key3: {r: 0, g: 0, b: 0, a: 0}
@@ -80,7 +80,7 @@ MonoBehaviour:
   pixelate: 0
   rimIntensity: 0.936
   rimPower: 5
-  rimColor: {r: 0.45882353, g: 0.45767736, b: 1, a: 1}
+  rimColor: {r: 0.01886791, g: 0.018422913, b: 0.018422913, a: 1}
   rimTexture: {fileID: 0}
   rimTextureOpacity: 1
   rimTextureScale: 8
@@ -201,8 +201,8 @@ MonoBehaviour:
   hitSpeed: 1
   hitNoiseScale: 1
   hitNoiseAmount: 1
-  brightness: 1
-  contrast: 1
+  brightness: 0.8
+  contrast: 1.064
   vibrance: 0
   hazeGradientTex: {fileID: 0}
   tintGradientTex: {fileID: 0}

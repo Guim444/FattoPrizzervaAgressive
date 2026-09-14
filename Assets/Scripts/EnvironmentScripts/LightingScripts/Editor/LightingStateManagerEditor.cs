@@ -31,7 +31,7 @@ public class LightingStateManagerEditor : Editor
         if (GUILayout.Button("→ Azul (snap)"))
             manager.SnapToState(LightingStateManager.LightingState.Blue);
 
-        if (GUILayout.Button("→ Iluminación Iglesia (Godrays + Cielo)"))
+        if (GUILayout.Button("→ Iluminación Iglesia (Godrays + Cielo + Mystify)"))
             manager.EnterChurch();
 
         if (GUILayout.Button("↺ Reset Iluminación Iglesia"))

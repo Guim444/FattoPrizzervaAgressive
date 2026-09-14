@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using HighlightPlus;
+using MystifyFX;
 using UnityEngine;
 
 /// <summary>
@@ -77,6 +78,20 @@ public class LightingStateManager : MonoBehaviour
     [Tooltip("Escala objetivo final (por defecto 1, 1, 1).")]
     [SerializeField] private Vector3 godRaysTargetScale = Vector3.one;
 
+    [Header("Mystify Effect")]
+    [Tooltip("MystifyEffect al que se le reducirá la propiedad Global Opacity al entrar a la iglesia.")]
+    [SerializeField] private MystifyEffect churchMystifyEffect;
+    [Tooltip("Tiempo de espera antes de comenzar a bajar la opacidad tras cruzar la puerta (en segundos).")]
+    [SerializeField, Min(0f)] private float mystifyFadeDelay = 0f;
+    [Tooltip("Tiempo que tarda en reducirse la opacidad (en segundos).")]
+    [SerializeField, Min(0.01f)] private float mystifyFadeDuration = 1.5f;
+    [Tooltip("Opacidad inicial al empezar o resetear la iglesia (por defecto 1).")]
+    [SerializeField, Range(0f, 1f)] private float mystifyStartOpacity = 1f;
+    [Tooltip("Opacidad objetivo final al entrar a la iglesia (por defecto 0).")]
+    [SerializeField, Range(0f, 1f)] private float mystifyTargetOpacity = 0f;
+    [Tooltip("Si está marcado, desactiva el GameObject de MystifyEffect si la opacidad objetivo llega a 0.")]
+    [SerializeField] private bool deactivateMystifyWhenZero = false;
+
     [Header("Play Mode Test")]
     [SerializeField] private LightingState _previewState;
     [SerializeField] private bool enableKeyboardShortcuts = true;
@@ -86,6 +101,7 @@ public class LightingStateManager : MonoBehaviour
     private Coroutine _activeTransition;
     private Coroutine _blueTransitionCoroutine;
     private Coroutine _godRaysCoroutine;
+    private Coroutine _mystifyCoroutine;
     private bool _godRaysTriggered;
     private readonly List<GameObject> _activatedByManager = new List<GameObject>();
     private readonly Dictionary<Light, FireVisualScript> _fireVisualsByLight =
@@ -97,18 +113,33 @@ public class LightingStateManager : MonoBehaviour
             lightmapStateManager = GetComponent<LightmapStateManager>();
 
         EnsureSkyHighlightReference();
+        EnsureMystifyEffectReference();
         CacheFireVisuals();
     }
 
     private void Start()
     {
         InitGodRays();
+        InitMystifyEffect();
     }
 
     private void EnsureSkyHighlightReference()
     {
         if (skyHighlightEffect == null && skyAnimator != null)
             skyHighlightEffect = skyAnimator.GetComponent<HighlightEffect>();
+    }
+
+    private void EnsureMystifyEffectReference()
+    {
+        if (churchMystifyEffect == null)
+        {
+            GameObject doorBlur = GameObject.Find("DoorBlur");
+            if (doorBlur != null)
+                churchMystifyEffect = doorBlur.GetComponent<MystifyEffect>();
+
+            if (churchMystifyEffect == null)
+                churchMystifyEffect = Object.FindAnyObjectByType<MystifyEffect>();
+        }
     }
 
     private void InitGodRays()
@@ -132,6 +163,31 @@ public class LightingStateManager : MonoBehaviour
         }
     }
 
+    private void InitMystifyEffect()
+    {
+        EnsureMystifyEffectReference();
+        if (churchMystifyEffect != null)
+        {
+            if (deactivateMystifyWhenZero && !churchMystifyEffect.gameObject.activeSelf)
+                churchMystifyEffect.gameObject.SetActive(true);
+
+            SetMystifyOpacity(mystifyStartOpacity);
+        }
+    }
+
+    private void SetMystifyOpacity(float opacity)
+    {
+        EnsureMystifyEffectReference();
+        if (churchMystifyEffect == null) return;
+
+        MystifyEffectProfile profile = churchMystifyEffect.profile;
+        if (profile == null) return;
+
+        profile.globalOpacity = opacity;
+        churchMystifyEffect.UpdateMaterialProperties();
+        churchMystifyEffect.UpdateMaterialPropertiesNow();
+    }
+
     /// <summary>
     /// Activa la iluminación de la iglesia (cielo y Godrays) en todos los gestores activos con una única búsqueda.
     /// </summary>
@@ -148,12 +204,14 @@ public class LightingStateManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Aplica todos los cambios de iluminación al entrar a la iglesia: activa el cielo y anima los Godrays.
+    /// Aplica todos los cambios de iluminación al entrar a la iglesia: activa el cielo, anima los Godrays y reduce la opacidad de MystifyEffect.
     /// </summary>
     public void EnterChurch()
     {
         if (skyHighlightEffect != null)
             skyHighlightEffect.enabled = true;
+
+        EnsureMystifyEffectReference();
 
         if (_godRaysTriggered) return;
         _godRaysTriggered = true;
@@ -162,10 +220,15 @@ public class LightingStateManager : MonoBehaviour
             StopCoroutine(_godRaysCoroutine);
 
         _godRaysCoroutine = StartCoroutine(AnimateGodRaysRoutine());
+
+        if (_mystifyCoroutine != null)
+            StopCoroutine(_mystifyCoroutine);
+
+        _mystifyCoroutine = StartCoroutine(FadeMystifyRoutine());
     }
 
     /// <summary>
-    /// Restablece la iluminación de la iglesia al estado inicial (Godrays a escala cero y cielo desactivado).
+    /// Restablece la iluminación de la iglesia al estado inicial (Godrays a escala cero, cielo desactivado y MystifyEffect restaurado).
     /// </summary>
     public void ResetChurchLighting()
     {
@@ -175,8 +238,58 @@ public class LightingStateManager : MonoBehaviour
             _godRaysCoroutine = null;
         }
 
+        if (_mystifyCoroutine != null)
+        {
+            StopCoroutine(_mystifyCoroutine);
+            _mystifyCoroutine = null;
+        }
+
         _godRaysTriggered = false;
         InitGodRays();
+        InitMystifyEffect();
+    }
+
+    private IEnumerator FadeMystifyRoutine()
+    {
+        EnsureMystifyEffectReference();
+        if (churchMystifyEffect == null)
+            yield break;
+
+        MystifyEffectProfile profile = churchMystifyEffect.profile;
+        if (profile == null)
+            yield break;
+
+        if (mystifyFadeDelay > 0f)
+            yield return new WaitForSeconds(mystifyFadeDelay);
+
+        float duration = Mathf.Max(0.001f, mystifyFadeDuration);
+        float elapsed = 0f;
+        float startOpacity = profile.globalOpacity;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float smoothT = Mathf.SmoothStep(0f, 1f, t);
+            float currentOpacity = Mathf.Lerp(startOpacity, mystifyTargetOpacity, smoothT);
+
+            profile.globalOpacity = currentOpacity;
+            churchMystifyEffect.UpdateMaterialProperties();
+            churchMystifyEffect.UpdateMaterialPropertiesNow();
+
+            yield return null;
+        }
+
+        profile.globalOpacity = mystifyTargetOpacity;
+        churchMystifyEffect.UpdateMaterialProperties();
+        churchMystifyEffect.UpdateMaterialPropertiesNow();
+
+        if (deactivateMystifyWhenZero && mystifyTargetOpacity <= 0f)
+        {
+            churchMystifyEffect.gameObject.SetActive(false);
+        }
+
+        _mystifyCoroutine = null;
     }
 
     private IEnumerator AnimateGodRaysRoutine()
