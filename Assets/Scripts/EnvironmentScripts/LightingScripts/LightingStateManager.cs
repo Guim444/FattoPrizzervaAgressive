@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using HighlightPlus;
 using MystifyFX;
 using UnityEngine;
+using VolumetricFogAndMist2;
 
 /// <summary>
 /// Manages intensity transitions between the 3 lighting states:
@@ -92,6 +93,20 @@ public class LightingStateManager : MonoBehaviour
     [Tooltip("Si está marcado, desactiva el GameObject de MystifyEffect si la opacidad objetivo llega a 0.")]
     [SerializeField] private bool deactivateMystifyWhenZero = false;
 
+    [Header("Volumetric Fog")]
+    [Tooltip("Volumetric Fog al que se le aumentará la distancia de inicio (Distant Fog).")]
+    [SerializeField] private VolumetricFog distantFog;
+    [Tooltip("Tiempo que tarda en transicionar desde la distancia actual hasta la distancia inicial fogStartDistance (en segundos).")]
+    [SerializeField, Min(0.001f)] private float fogToStartDuration = 1.0f;
+    [Tooltip("Tiempo de espera antes de comenzar a incrementar la distancia hacia fogEndDistance (en segundos).")]
+    [SerializeField, Min(0f)] private float fogIncreaseDelay = 0f;
+    [Tooltip("Tiempo que tarda en aumentar la distancia hasta fogEndDistance (en segundos).")]
+    [SerializeField, Min(0.01f)] private float fogTransitionDuration = 1.5f;
+    [Tooltip("Distancia inicial al empezar o resetear la iglesia (por defecto 6).")]
+    [SerializeField, Min(0f)] private float fogStartDistance = 6f;
+    [Tooltip("Distancia objetivo final al entrar a la iglesia (por defecto 38).")]
+    [SerializeField, Min(0f)] private float fogEndDistance = 38f;
+
     [Header("Play Mode Test")]
     [SerializeField] private LightingState _previewState;
     [SerializeField] private bool enableKeyboardShortcuts = true;
@@ -102,6 +117,7 @@ public class LightingStateManager : MonoBehaviour
     private Coroutine _blueTransitionCoroutine;
     private Coroutine _godRaysCoroutine;
     private Coroutine _mystifyCoroutine;
+    private Coroutine _distantFogCoroutine;
     private bool _godRaysTriggered;
     private readonly List<GameObject> _activatedByManager = new List<GameObject>();
     private readonly Dictionary<Light, FireVisualScript> _fireVisualsByLight =
@@ -114,6 +130,7 @@ public class LightingStateManager : MonoBehaviour
 
         EnsureSkyHighlightReference();
         EnsureMystifyEffectReference();
+        EnsureDistantFogReference();
         CacheFireVisuals();
     }
 
@@ -121,6 +138,7 @@ public class LightingStateManager : MonoBehaviour
     {
         InitGodRays();
         InitMystifyEffect();
+        //InitDistantFog();
     }
 
     private void EnsureSkyHighlightReference()
@@ -188,6 +206,37 @@ public class LightingStateManager : MonoBehaviour
         churchMystifyEffect.UpdateMaterialPropertiesNow();
     }
 
+    private void EnsureDistantFogReference()
+    {
+        if (distantFog == null)
+        {
+            distantFog = Object.FindAnyObjectByType<VolumetricFog>();
+        }
+    }
+
+    private void InitDistantFog()
+    {
+        EnsureDistantFogReference();
+        if (distantFog != null)
+        {
+            SetDistantFogDistance(fogStartDistance);
+        }
+    }
+
+    private void SetDistantFogDistance(float distance)
+    {
+        EnsureDistantFogReference();
+        if (distantFog == null) return;
+
+        VolumetricFogProfile profile = distantFog.settings;
+        if (profile == null) return;
+
+        profile.distantFog = true;
+        profile.distantFogStartDistance = distance;
+        distantFog.UpdateMaterialProperties();
+        distantFog.UpdateMaterialPropertiesNow();
+    }
+
     /// <summary>
     /// Activa la iluminación de la iglesia (cielo y Godrays) en todos los gestores activos con una única búsqueda.
     /// </summary>
@@ -204,7 +253,7 @@ public class LightingStateManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Aplica todos los cambios de iluminación al entrar a la iglesia: activa el cielo, anima los Godrays y reduce la opacidad de MystifyEffect.
+    /// Aplica todos los cambios de iluminación al entrar a la iglesia: activa el cielo, anima los Godrays, reduce la opacidad de MystifyEffect y aumenta la distancia de Distant Fog.
     /// </summary>
     public void EnterChurch()
     {
@@ -212,6 +261,7 @@ public class LightingStateManager : MonoBehaviour
             skyHighlightEffect.enabled = true;
 
         EnsureMystifyEffectReference();
+        EnsureDistantFogReference();
 
         if (_godRaysTriggered) return;
         _godRaysTriggered = true;
@@ -225,10 +275,15 @@ public class LightingStateManager : MonoBehaviour
             StopCoroutine(_mystifyCoroutine);
 
         _mystifyCoroutine = StartCoroutine(FadeMystifyRoutine());
+
+        if (_distantFogCoroutine != null)
+            StopCoroutine(_distantFogCoroutine);
+
+        _distantFogCoroutine = StartCoroutine(DistantFogRoutine());
     }
 
     /// <summary>
-    /// Restablece la iluminación de la iglesia al estado inicial (Godrays a escala cero, cielo desactivado y MystifyEffect restaurado).
+    /// Restablece la iluminación de la iglesia al estado inicial (Godrays a escala cero, cielo desactivado, MystifyEffect restaurado y Distant Fog reseteado).
     /// </summary>
     public void ResetChurchLighting()
     {
@@ -244,9 +299,81 @@ public class LightingStateManager : MonoBehaviour
             _mystifyCoroutine = null;
         }
 
+        if (_distantFogCoroutine != null)
+        {
+            StopCoroutine(_distantFogCoroutine);
+            _distantFogCoroutine = null;
+        }
+
         _godRaysTriggered = false;
         InitGodRays();
         InitMystifyEffect();
+        InitDistantFog();
+    }
+
+    private IEnumerator DistantFogRoutine()
+    {
+        EnsureDistantFogReference();
+        if (distantFog == null)
+            yield break;
+
+        VolumetricFogProfile profile = distantFog.settings;
+        if (profile == null)
+            yield break;
+
+        profile.distantFog = true;
+
+        // Fase 1: Transicionar desde el valor actual hasta fogStartDistance
+        float currentDistance = profile.distantFogStartDistance;
+        float toStartDuration = Mathf.Max(0.001f, fogToStartDuration);
+        float elapsed = 0f;
+
+        while (elapsed < toStartDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / toStartDuration);
+            float smoothT = Mathf.SmoothStep(0f, 1f, t);
+            float dist = Mathf.Lerp(currentDistance, fogStartDistance, smoothT);
+
+            profile.distantFogStartDistance = dist;
+            distantFog.UpdateMaterialProperties();
+            distantFog.UpdateMaterialPropertiesNow();
+
+            yield return null;
+        }
+
+        profile.distantFogStartDistance = fogStartDistance;
+        distantFog.UpdateMaterialProperties();
+        distantFog.UpdateMaterialPropertiesNow();
+
+        // Delay opcional antes de aumentar hacia fogEndDistance
+        if (fogIncreaseDelay > 0f)
+            yield return new WaitForSeconds(fogIncreaseDelay);
+
+        // Fase 2: Transicionar desde fogStartDistance hasta fogEndDistance
+        float duration = Mathf.Max(0.001f, fogTransitionDuration);
+        elapsed = 0f;
+        float startDist = profile.distantFogStartDistance;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float smoothT = Mathf.SmoothStep(0f, 1f, t);
+            float dist = Mathf.Lerp(startDist, fogEndDistance, smoothT);
+
+            profile.distantFogStartDistance = dist;
+            distantFog.UpdateMaterialProperties();
+            distantFog.UpdateMaterialPropertiesNow();
+
+            yield return null;
+        }
+
+        profile.distantFogStartDistance = fogEndDistance;
+        distantFog.UpdateMaterialProperties();
+        distantFog.UpdateMaterialPropertiesNow();
+
+        _distantFogCoroutine = null;
     }
 
     private IEnumerator FadeMystifyRoutine()

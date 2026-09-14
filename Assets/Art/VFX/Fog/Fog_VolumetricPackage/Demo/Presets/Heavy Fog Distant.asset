@@ -138,7 +138,7 @@ MonoBehaviour:
   shadowMaxDistance: 250
   cookie: 0
   distantFog: 1
-  distantFogStartDistance: 500
+  distantFogStartDistance: 100
   distantFogDistanceDensity: 0.3
   distantFogMaxHeight: 250
   distantFogHeightDensity: 1
