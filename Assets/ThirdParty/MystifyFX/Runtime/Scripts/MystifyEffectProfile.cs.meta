@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: d75d2555fb91a47e0804fa3f9fe118f2
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 303296
+  packageName: Mystify FX - Energy Shields, Holograms & Object VFX
+  packageVersion: 3.0.5
+  assetPath: Assets/MystifyFX/Runtime/Scripts/MystifyEffectProfile.cs
+  uploadId: 989114

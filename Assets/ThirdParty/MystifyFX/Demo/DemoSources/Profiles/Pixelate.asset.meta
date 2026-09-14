@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 760608d46f2834f029ac9bc65358e473
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 303296
+  packageName: Mystify FX - Energy Shields, Holograms & Object VFX
+  packageVersion: 3.0.5
+  assetPath: Assets/MystifyFX/Demo/DemoSources/Profiles/Pixelate.asset
+  uploadId: 989114

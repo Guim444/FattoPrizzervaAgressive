@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 4db75a39f1002463e89ab5bd3647c3ed
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 303296
+  packageName: Mystify FX - Energy Shields, Holograms & Object VFX
+  packageVersion: 3.0.5
+  assetPath: Assets/MystifyFX/Runtime/Resources/Materials/MystifyHexa.mat
+  uploadId: 989114

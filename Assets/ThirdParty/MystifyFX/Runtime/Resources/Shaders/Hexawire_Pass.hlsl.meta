@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 3e938314a70094edfbf992b6de041a64
+ShaderIncludeImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 303296
+  packageName: Mystify FX - Energy Shields, Holograms & Object VFX
+  packageVersion: 3.0.5
+  assetPath: Assets/MystifyFX/Runtime/Resources/Shaders/Hexawire_Pass.hlsl
+  uploadId: 989114

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 3b476c66059fd41d8952a6b680ec3cf1
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 4300000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 303296
+  packageName: Mystify FX - Energy Shields, Holograms & Object VFX
+  packageVersion: 3.0.5
+  assetPath: Assets/MystifyFX/Runtime/Resources/Meshes/Sphere.asset
+  uploadId: 989114

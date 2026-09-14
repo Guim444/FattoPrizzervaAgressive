@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 9df22f92260444a9aaf88d56e5246e3c
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 303296
+  packageName: Mystify FX - Energy Shields, Holograms & Object VFX
+  packageVersion: 3.0.5
+  assetPath: Assets/MystifyFX/Runtime/Resources/Shaders/Hexawire.shader
+  uploadId: 989114

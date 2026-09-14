@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 616287ca53d2d4e89b2257c23223a294
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 4300000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 303296
+  packageName: Mystify FX - Energy Shields, Holograms & Object VFX
+  packageVersion: 3.0.5
+  assetPath: Assets/MystifyFX/Runtime/Resources/Meshes/Cylinder.asset
+  uploadId: 989114

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 328f329fa4a0543d4a393b48dbd94e40
+ShaderIncludeImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 303296
+  packageName: Mystify FX - Energy Shields, Holograms & Object VFX
+  packageVersion: 3.0.5
+  assetPath: Assets/MystifyFX/Runtime/Resources/Shaders/MystifyFXCore.hlsl
+  uploadId: 989114

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 69b080f6a68b046b7945e1bac887bb01
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 303296
+  packageName: Mystify FX - Energy Shields, Holograms & Object VFX
+  packageVersion: 3.0.5
+  assetPath: Assets/MystifyFX/Demo/DemoSources/URP Settings/UniversalRenderPipelineGlobalSettings.asset
+  uploadId: 989114

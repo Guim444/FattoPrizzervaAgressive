@@ -1,0 +1,209 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d75d2555fb91a47e0804fa3f9fe118f2, type: 3}
+  m_Name: Hexagonal Portal
+  m_EditorClassIdentifier: 
+  owner: {fileID: 0}
+  cullMode: 0
+  wrapMode: 0
+  textureSource: 0
+  renderOnTop: 0
+  grabPass: 0
+  alwaysOn: 1
+  maskTexture: {fileID: 0}
+  alphaCutoff: 0
+  globalOpacity: 1
+  useStopMotion: 0
+  stopMotionInterval: 0.125
+  scaleFactor: 1
+  zoomFactor: 1
+  sourceOffset: {x: 0, y: 0}
+  sourceScale: {x: 1, y: 1}
+  uvOffset: {x: 0, y: 0}
+  uvScale: {x: 1, y: 1}
+  vertexDistortion: 0
+  vertexDistortionSpeed: 1
+  blurIntensity: 0
+  lutEffect: 0
+  lutTexture: {fileID: 0}
+  lutIntensity: 1
+  tintGradient:
+    serializedVersion: 2
+    key0: {r: 1, g: 1, b: 1, a: 0}
+    key1: {r: 1, g: 1, b: 1, a: 0}
+    key2: {r: 0, g: 0, b: 0, a: 0}
+    key3: {r: 0, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 65535
+    ctime2: 0
+    ctime3: 0
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_ColorSpace: -1
+    m_NumColorKeys: 2
+    m_NumAlphaKeys: 2
+  tintPos1: {x: 0, y: -0.5, z: 0}
+  tintPos2: {x: 0, y: 0.5, z: 0}
+  tintApplyAlphaToAll: 0
+  noiseSize: 10.4
+  noiseAmount: 0
+  distortion: 1
+  distortionAmplitude: {x: 1, y: 1}
+  distortionFrequency: 10
+  distortionAnimationSpeed: 1
+  distortionFalloff: 5
+  distortionRimPower: 0
+  pixelate: 0
+  rimIntensity: 0
+  rimPower: 5
+  rimColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  rimTexture: {fileID: 0}
+  rimTextureOpacity: 1
+  rimTextureScale: 8
+  chromaticAberrationAmount: 0
+  chromaticAberrationEdgePower: 0
+  scanLinesIntensity: 0.172
+  scanLinesScreenSpace: 0
+  scanLinesSize: 25
+  scanLinesAnimationSpeed: 0
+  scanLinesColor: {r: 1, g: 1, b: 1, a: 1}
+  scanLinesMaxDistance: 2
+  scanLinesRotation: 0
+  hazeIntensity: 8.73
+  hazeThreshold: 4.5
+  hazeMode: 0
+  hazeGradient:
+    serializedVersion: 2
+    key0: {r: 1, g: 0, b: 0.45808077, a: 1}
+    key1: {r: 1, g: 0, b: 0.45808077, a: 1}
+    key2: {r: 0, g: 0, b: 0, a: 0}
+    key3: {r: 0, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 65535
+    ctime2: 0
+    ctime3: 0
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_ColorSpace: 0
+    m_NumColorKeys: 2
+    m_NumAlphaKeys: 2
+  hazeScale: {x: 0.2, y: 0.2}
+  hazeSpeed: 1
+  frostIntensity: 0
+  frostSpread: 2.5
+  frostColor: {r: 1, g: 1, b: 1, a: 1}
+  crystalize: 0
+  crystalizeSpread: 0
+  crystalizeAnimationSpeed: {x: 0, y: 0}
+  crystalizeScale: {x: 1, y: 1}
+  intersection: 0
+  intersectionThickness: 0.5
+  intersectionColor: {r: 1, g: 1, b: 1, a: 1}
+  intersectionNoise: 1
+  rain: 0
+  glassTinyDrops: 0.6
+  glassTinyDropsGridSize: 64
+  glassLargeDrops: 0.7
+  glassLargeDropsGridSize: 12
+  glassLargeDropsSpeed: 1
+  glassWaterDropIntensity: 1
+  rainfall: 0.15
+  rainWind: 0
+  rainSpeed: 1
+  fakeLight: 0
+  fakeLightIntensity: 0
+  fakeLightFog: 0.15
+  fakeLightGradient:
+    serializedVersion: 2
+    key0: {r: 1, g: 1, b: 1, a: 1}
+    key1: {r: 1, g: 1, b: 1, a: 1}
+    key2: {r: 0, g: 0, b: 0, a: 0}
+    key3: {r: 0, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 65535
+    ctime2: 0
+    ctime3: 0
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_ColorSpace: -1
+    m_NumColorKeys: 2
+    m_NumAlphaKeys: 2
+  fakeLightFalloff: 0.5
+  fakeLightSpeed: 0
+  hexaGrid: 0
+  hexaGridScale: 1
+  hexaGridColor: {r: 1, g: 1, b: 1, a: 0.35}
+  hexaGridRimPower: 0
+  hexaGridNoiseStrength: 5
+  hexaGridNoiseColor: {r: 0.5, g: 0.5, b: 1, a: 0.65}
+  hexaGridNoiseThreshold: 0.3
+  hexaGridNoiseScale: 0.2
+  hexaGridSweepAmount: 0
+  hexaGridSweepSpeed: 1
+  hexaGridSweepFrequency: 1.5
+  hitIntensity: 1
+  hitColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  hitRadius: 1.5
+  hitSpeed: 1
+  hitNoiseScale: 1
+  hitNoiseAmount: 0.25
+  brightness: 1
+  contrast: 1
+  vibrance: 1
+  hazeGradientTex: {fileID: 0}
+  tintGradientTex: {fileID: 0}
+  fakeLightGradientTex: {fileID: 0}

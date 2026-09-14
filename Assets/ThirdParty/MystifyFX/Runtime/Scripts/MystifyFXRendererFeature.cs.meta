@@ -1,0 +1,20 @@
+fileFormatVersion: 2
+guid: 5f424697cbaa8423c933aa75badbd68d
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - settings: {fileID: 11400000, guid: 68dde9df85a05a54fbc92e3b6f3a8c42, type: 2}
+  - hbaoShader: {fileID: 4800000, guid: bf610497676b34e4dbe0f14fe3fe311c, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 303296
+  packageName: Mystify FX - Energy Shields, Holograms & Object VFX
+  packageVersion: 3.0.5
+  assetPath: Assets/MystifyFX/Runtime/Scripts/MystifyFXRendererFeature.cs
+  uploadId: 989114

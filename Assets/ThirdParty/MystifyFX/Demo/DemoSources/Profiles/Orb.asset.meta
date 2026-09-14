@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: af6c200173cc10f4ea5dc204ced6285d
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 303296
+  packageName: Mystify FX - Energy Shields, Holograms & Object VFX
+  packageVersion: 3.0.5
+  assetPath: Assets/MystifyFX/Demo/DemoSources/Profiles/Orb.asset
+  uploadId: 989114

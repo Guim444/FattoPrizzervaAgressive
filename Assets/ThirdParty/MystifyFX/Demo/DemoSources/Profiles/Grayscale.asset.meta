@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 78cd89c1d9b4f42c58632eca080b30fa
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 303296
+  packageName: Mystify FX - Energy Shields, Holograms & Object VFX
+  packageVersion: 3.0.5
+  assetPath: Assets/MystifyFX/Demo/DemoSources/Profiles/Grayscale.asset
+  uploadId: 989114

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 7b5b12bb144904e9ea05157a3a5fb8d5
+ShaderIncludeImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 303296
+  packageName: Mystify FX - Energy Shields, Holograms & Object VFX
+  packageVersion: 3.0.5
+  assetPath: Assets/MystifyFX/Runtime/Resources/Shaders/VolumeFX_Pass.hlsl
+  uploadId: 989114
