@@ -77,8 +77,11 @@ public class LightingStateManager : MonoBehaviour
     [SerializeField, Min(0f)] private float godRaysDelay = 0f;
     [Tooltip("Tiempo que tarda la escala en aumentar de 0 a 1 (en segundos).")]
     [SerializeField, Min(0.01f)] private float godRaysScaleDuration = 1.5f;
-    [Tooltip("Escala objetivo final (por defecto 1, 1, 1).")]
-    [SerializeField] private Vector3 godRaysTargetScale = Vector3.one;
+    [Tooltip("Escala objetivo final del primer Godray (por defecto 1, 1, 1).")]
+    [FormerlySerializedAs("godRaysTargetScale")]
+    [SerializeField] private Vector3 godRay1TargetScale = Vector3.one;
+    [Tooltip("Escala objetivo final del segundo Godray (por defecto 1, 1, 1).")]
+    [SerializeField] private Vector3 godRay2TargetScale = Vector3.one;
 
     [Header("Mystify Effect")]
     [Tooltip("MystifyEffect al que se le reducirá la propiedad Global Opacity al entrar a la iglesia.")]
@@ -451,22 +454,20 @@ public class LightingStateManager : MonoBehaviour
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / duration);
             float smoothT = Mathf.SmoothStep(0f, 1f, t);
-            Vector3 currentScale = Vector3.Lerp(Vector3.zero, godRaysTargetScale, smoothT);
-
             if (godRay1 != null)
-                godRay1.transform.localScale = currentScale;
+                godRay1.transform.localScale = Vector3.Lerp(Vector3.zero, godRay1TargetScale, smoothT);
 
             if (godRay2 != null)
-                godRay2.transform.localScale = currentScale;
+                godRay2.transform.localScale = Vector3.Lerp(Vector3.zero, godRay2TargetScale, smoothT);
 
             yield return null;
         }
 
         if (godRay1 != null)
-            godRay1.transform.localScale = godRaysTargetScale;
+            godRay1.transform.localScale = godRay1TargetScale;
 
         if (godRay2 != null)
-            godRay2.transform.localScale = godRaysTargetScale;
+            godRay2.transform.localScale = godRay2TargetScale;
 
         _godRaysCoroutine = null;
     }
