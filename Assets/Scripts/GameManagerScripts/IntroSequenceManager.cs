@@ -1030,6 +1030,13 @@ public class IntroSequenceManager : MonoBehaviour
         if (playerAnimator == null || !playerAnimator.enabled) return;
         SetPlayerAnimatorBoolIfAvailable(IdleFrontHash, true);
         SetPlayerAnimatorBoolIfAvailable(IdleFrontHumanHash, false);
+
+        if (playerAnimator.HasState(0, IdleGhostFrontStateHash))
+            playerAnimator.Play(IdleGhostFrontStateHash, 0, 0f);
+        else if (playerAnimator.HasState(0, Animator.StringToHash("Idle_Front")))
+            playerAnimator.Play(Animator.StringToHash("Idle_Front"), 0, 0f);
+
+        playerAnimator.Update(0f);
     }
 
     private float GetTransformationProgress()
