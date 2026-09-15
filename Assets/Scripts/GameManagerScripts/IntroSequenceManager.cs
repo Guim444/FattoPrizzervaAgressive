@@ -117,6 +117,9 @@ public class IntroSequenceManager : MonoBehaviour
     [Range(0f, 1f)]
     [SerializeField] private float ratioQ4 = 0.15f;
 
+    [SerializeField]
+    private float timeDelayRiotutteAnim = 3.0f;
+
     [Header("Blink — Form Lock")]
     [SerializeField] private bool lockHumanForm = false;
 
@@ -154,6 +157,7 @@ public class IntroSequenceManager : MonoBehaviour
     private bool _originalCanSprint;
     private bool _hasOriginalIntroControlSettings;
     private bool _hasWarnedInvalidBlinkQuarterMarkers;
+   
     private readonly Dictionary<int, AnimatorControllerParameterType> _animatorParameterTypes =
         new Dictionary<int, AnimatorControllerParameterType>();
     private readonly List<ParticleSystem> _introBlizzardParticles = new List<ParticleSystem>();
@@ -856,6 +860,43 @@ public class IntroSequenceManager : MonoBehaviour
         return true;
     }
 
+    private IEnumerator WaitForCurrentAnimationCycleToEnd(int shortHash, int fullHash)
+    {
+        if (playerAnimator == null || !playerAnimator.enabled)
+            yield break;
+
+        AnimatorStateInfo stateInfo = playerAnimator.GetCurrentAnimatorStateInfo(0);
+        bool isCurrentState = stateInfo.shortNameHash == shortHash || stateInfo.fullPathHash == fullHash;
+        if (!isCurrentState)
+            yield break;
+
+        float startNormalized = stateInfo.normalizedTime;
+        float targetNormalized = Mathf.Floor(startNormalized) + 1f;
+        float maxWaitTime = stateInfo.length > 0f ? stateInfo.length * 1.5f : 8f;
+        float elapsed = 0f;
+        float previousNormalized = startNormalized;
+
+        while (playerAnimator != null && playerAnimator.enabled && !lockHumanForm)
+        {
+            stateInfo = playerAnimator.GetCurrentAnimatorStateInfo(0);
+            isCurrentState = stateInfo.shortNameHash == shortHash || stateInfo.fullPathHash == fullHash;
+
+            if (!isCurrentState)
+                break;
+
+            if (stateInfo.normalizedTime >= targetNormalized ||
+                stateInfo.normalizedTime < previousNormalized ||
+                elapsed >= maxWaitTime)
+            {
+                break;
+            }
+
+            previousNormalized = stateInfo.normalizedTime;
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+    }
+
     private IEnumerator BlinkCoroutine()
     {
         if (TryGetSortedQuarterBoundaries(out float boundary1, out float boundary2, out float boundary3))
@@ -868,6 +909,9 @@ public class IntroSequenceManager : MonoBehaviour
                 TryGetSortedQuarterBoundaries(out boundary1, out boundary2, out boundary3);
             }
 
+            // Espera a que termine el ciclo actual de Phase 1 antes de transicionar a Phase 2
+            yield return StartCoroutine(WaitForCurrentAnimationCycleToEnd(Phase1ShortHash, Phase1FullHash));
+
             // Tramo 2: Phase 2 en bucle durante la fase 2
             EnsurePhaseAnimation(Phase2ShortHash, Phase2FullHash);
             while (playerTransform != null && playerTransform.position.x < boundary2)
@@ -876,6 +920,9 @@ public class IntroSequenceManager : MonoBehaviour
                 yield return null;
                 TryGetSortedQuarterBoundaries(out boundary1, out boundary2, out boundary3);
             }
+
+            // Espera a que termine el ciclo actual de Phase 2 antes de transicionar a Phase 3Transition
+            yield return StartCoroutine(WaitForCurrentAnimationCycleToEnd(Phase2ShortHash, Phase2FullHash));
 
             // Transición a 3: Al llegar al marcador de la fase 3, reproduce la transición completa
             if (playerAnimator != null && playerAnimator.enabled &&
@@ -1199,10 +1246,10 @@ public class IntroSequenceManager : MonoBehaviour
 
         EnterChurchLighting(lightingSceneName);
 
+        StartCoroutine(AnimateRiotutteStandard(rioTutteStandard));
+
         Coroutine cameraLowering = StartCoroutine(LowerCameraDuringAutoMove(autoMoveCameraY, firstDuration));
         yield return StartCoroutine(MovePlayerToPosition(firstTarget.position, firstDuration));
-
-        rioTutteStandard.GetComponent<Animator>().enabled = true;
 
         ApplyEnvironmentPhase(3);
 
@@ -1242,6 +1289,16 @@ public class IntroSequenceManager : MonoBehaviour
 
         _churchSequenceCoroutine = null;
     }
+
+    private IEnumerator AnimateRiotutteStandard(Transform rioTutteStandard)
+    {
+        yield return new WaitForSeconds(timeDelayRiotutteAnim);
+
+        rioTutteStandard.GetComponent<Animator>().enabled = true;
+    }
+
+
+
 
     private bool EnterDialogueLayout(string lightingSceneName, string dialogueSceneName)
     {
