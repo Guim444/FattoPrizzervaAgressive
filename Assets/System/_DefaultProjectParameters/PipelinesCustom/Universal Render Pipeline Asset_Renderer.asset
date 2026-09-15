@@ -383,7 +383,7 @@ MonoBehaviour:
   m_Name: MystifyFX
   m_EditorClassIdentifier: 
   m_Active: 1
-  renderPassEvent: 500
+  renderPassEvent: 450
   blurMasterAmount: 1
   blurHighlightThreshold: 1
   blurHighlightIntensity: 0

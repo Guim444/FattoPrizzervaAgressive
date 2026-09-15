@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using HighlightPlus;
 using MystifyFX;
 using UnityEngine;
+using UnityEngine.Serialization;
 using VolumetricFogAndMist2;
 
 /// <summary>
