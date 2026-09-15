@@ -6723,9 +6723,9 @@ Light:
   m_Enabled: 1
   serializedVersion: 11
   m_Type: 0
-  m_Color: {r: 1, g: 0.9969378, b: 0.8132075, a: 1}
+  m_Color: {r: 0.6606889, g: 0.9528302, b: 0.9268869, a: 1}
   m_Intensity: 195
-  m_Range: 10
+  m_Range: 15
   m_SpotAngle: 25.12283
   m_InnerSpotAngle: 19.82369
   m_CookieSize: 10
@@ -12505,7 +12505,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NoiseTex:
-        m_Texture: {fileID: 1949312130}
+        m_Texture: {fileID: 1007889174}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
@@ -12528,7 +12528,7 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _DetailColor: {r: 0.5231373, g: 0.5231373, b: 0.5231373, a: 0}
     - _DetailData: {r: 0.5, g: 4, b: -0.5, a: 0}
-    - _DetailWindDirection: {r: 0.055201996, g: 0, b: 0, a: 0}
+    - _DetailWindDirection: {r: 0.09259102, g: 0, b: 0, a: 0}
     - _DistanceData: {r: 0, g: 4.12, b: 0.000004, a: 0.0040856707}
     - _FogOfWarCenter: {r: 0, g: 0, b: 0, a: 1}
     - _FogOfWarCenterAdjusted: {r: 0, g: 0, b: 0, a: 1}
@@ -12541,7 +12541,7 @@ Material:
     - _ShadowData: {r: 0.4, g: 0, b: 250, a: 0}
     - _SpecularColor: {r: 0.5, g: 0.5, b: 0.5, a: 0}
     - _SunDir: {r: 0.88837695, g: 0.45570028, b: -0.055891793, a: 0}
-    - _WindDirection: {r: 0.055201996, g: 0, b: 0, a: 0}
+    - _WindDirection: {r: 0.09259102, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!1 &772026797
@@ -12768,7 +12768,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NoiseTex:
-        m_Texture: {fileID: 1634529038}
+        m_Texture: {fileID: 2136264669}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
@@ -12791,7 +12791,7 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _DetailColor: {r: 0.5231373, g: 0.5231373, b: 0.5231373, a: 0}
     - _DetailData: {r: 0.5, g: 4, b: -0.5, a: 0}
-    - _DetailWindDirection: {r: 0.055201996, g: 0, b: 0, a: 0}
+    - _DetailWindDirection: {r: 0.09259102, g: 0, b: 0, a: 0}
     - _DistanceData: {r: 0, g: 5.8, b: 0.000004, a: 0.0060955924}
     - _FogOfWarCenter: {r: 0, g: 0, b: 0, a: 1}
     - _FogOfWarCenterAdjusted: {r: 0, g: 0, b: 0, a: 1}
@@ -12804,7 +12804,7 @@ Material:
     - _ShadowData: {r: 0.4, g: 0, b: 250, a: 0}
     - _SpecularColor: {r: 0.5, g: 0.5, b: 0.5, a: 0}
     - _SunDir: {r: 0.88837695, g: 0.45570028, b: -0.055891793, a: 0}
-    - _WindDirection: {r: 0.055201996, g: 0, b: 0, a: 0}
+    - _WindDirection: {r: 0.09259102, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!1 &777377087
@@ -20609,6 +20609,43 @@ Animator:
   m_CorrespondingSourceObject: {fileID: 6988635055884618310, guid: 164cd64085e843f4d93a0a2a64687ef7, type: 3}
   m_PrefabInstance: {fileID: 338791797}
   m_PrefabAsset: {fileID: 0}
+--- !u!84 &1007889174
+RenderTexture:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_IsAlphaChannelOptional: 0
+  serializedVersion: 6
+  m_Width: 256
+  m_Height: 256
+  m_AntiAliasing: 1
+  m_MipCount: -1
+  m_DepthStencilFormat: 0
+  m_ColorFormat: 8
+  m_MipMap: 0
+  m_GenerateMips: 1
+  m_SRGB: 0
+  m_UseDynamicScale: 0
+  m_UseDynamicScaleExplicit: 0
+  m_BindMS: 0
+  m_EnableCompatibleFormat: 1
+  m_EnableRandomWrite: 0
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 1
+    m_Aniso: 1
+    m_MipBias: 0
+    m_WrapU: 0
+    m_WrapV: 0
+    m_WrapW: 0
+  m_Dimension: 2
+  m_VolumeDepth: 1
+  m_ShadowSamplingMode: 2
 --- !u!1 &1008962376
 GameObject:
   m_ObjectHideFlags: 0
@@ -28066,43 +28103,6 @@ Transform:
   - {fileID: 1024656098}
   m_Father: {fileID: 1432079889}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!84 &1634529038
-RenderTexture:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_IsAlphaChannelOptional: 0
-  serializedVersion: 6
-  m_Width: 256
-  m_Height: 256
-  m_AntiAliasing: 1
-  m_MipCount: -1
-  m_DepthStencilFormat: 0
-  m_ColorFormat: 8
-  m_MipMap: 0
-  m_GenerateMips: 1
-  m_SRGB: 0
-  m_UseDynamicScale: 0
-  m_UseDynamicScaleExplicit: 0
-  m_BindMS: 0
-  m_EnableCompatibleFormat: 1
-  m_EnableRandomWrite: 0
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 1
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 0
-    m_WrapV: 0
-    m_WrapW: 0
-  m_Dimension: 2
-  m_VolumeDepth: 1
-  m_ShadowSamplingMode: 2
 --- !u!1001 &1644936082
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -32320,43 +32320,6 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
---- !u!84 &1949312130
-RenderTexture:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_IsAlphaChannelOptional: 0
-  serializedVersion: 6
-  m_Width: 256
-  m_Height: 256
-  m_AntiAliasing: 1
-  m_MipCount: -1
-  m_DepthStencilFormat: 0
-  m_ColorFormat: 8
-  m_MipMap: 0
-  m_GenerateMips: 1
-  m_SRGB: 0
-  m_UseDynamicScale: 0
-  m_UseDynamicScaleExplicit: 0
-  m_BindMS: 0
-  m_EnableCompatibleFormat: 1
-  m_EnableRandomWrite: 0
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 1
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 0
-    m_WrapV: 0
-    m_WrapW: 0
-  m_Dimension: 2
-  m_VolumeDepth: 1
-  m_ShadowSamplingMode: 2
 --- !u!1 &1955986769
 GameObject:
   m_ObjectHideFlags: 0
@@ -38961,6 +38924,43 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
+--- !u!84 &2136264669
+RenderTexture:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_IsAlphaChannelOptional: 0
+  serializedVersion: 6
+  m_Width: 256
+  m_Height: 256
+  m_AntiAliasing: 1
+  m_MipCount: -1
+  m_DepthStencilFormat: 0
+  m_ColorFormat: 8
+  m_MipMap: 0
+  m_GenerateMips: 1
+  m_SRGB: 0
+  m_UseDynamicScale: 0
+  m_UseDynamicScaleExplicit: 0
+  m_BindMS: 0
+  m_EnableCompatibleFormat: 1
+  m_EnableRandomWrite: 0
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 1
+    m_Aniso: 1
+    m_MipBias: 0
+    m_WrapU: 0
+    m_WrapV: 0
+    m_WrapW: 0
+  m_Dimension: 2
+  m_VolumeDepth: 1
+  m_ShadowSamplingMode: 2
 --- !u!1 &2138240528
 GameObject:
   m_ObjectHideFlags: 0
@@ -43784,8 +43784,16 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1893225437}
     - target: {fileID: 3396225522924585539, guid: 2d9375674999f234493c06101bc5c824, type: 3}
+      propertyPath: timedLight1
+      value: 
+      objectReference: {fileID: 1144990746}
+    - target: {fileID: 3396225522924585539, guid: 2d9375674999f234493c06101bc5c824, type: 3}
+      propertyPath: timedLight2
+      value: 
+      objectReference: {fileID: 166374252}
+    - target: {fileID: 3396225522924585539, guid: 2d9375674999f234493c06101bc5c824, type: 3}
       propertyPath: godRaysDelay
-      value: 5.5
+      value: 7.5
       objectReference: {fileID: 0}
     - target: {fileID: 3396225522924585539, guid: 2d9375674999f234493c06101bc5c824, type: 3}
       propertyPath: _previewState
@@ -43801,7 +43809,7 @@ PrefabInstance:
       objectReference: {fileID: 499184186}
     - target: {fileID: 3396225522924585539, guid: 2d9375674999f234493c06101bc5c824, type: 3}
       propertyPath: fogIncreaseDelay
-      value: 3.5
+      value: 5.5
       objectReference: {fileID: 0}
     - target: {fileID: 3396225522924585539, guid: 2d9375674999f234493c06101bc5c824, type: 3}
       propertyPath: fogStartDistance
@@ -43810,6 +43818,14 @@ PrefabInstance:
     - target: {fileID: 3396225522924585539, guid: 2d9375674999f234493c06101bc5c824, type: 3}
       propertyPath: mystifyFadeDelay
       value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3396225522924585539, guid: 2d9375674999f234493c06101bc5c824, type: 3}
+      propertyPath: timedLight1Delay
+      value: 7.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3396225522924585539, guid: 2d9375674999f234493c06101bc5c824, type: 3}
+      propertyPath: timedLight2Delay
+      value: 7.5
       objectReference: {fileID: 0}
     - target: {fileID: 3396225522924585539, guid: 2d9375674999f234493c06101bc5c824, type: 3}
       propertyPath: fogToStartDuration
@@ -43861,7 +43877,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3396225522924585539, guid: 2d9375674999f234493c06101bc5c824, type: 3}
       propertyPath: godRaysScaleDuration
-      value: 4
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 3396225522924585539, guid: 2d9375674999f234493c06101bc5c824, type: 3}
       propertyPath: godRaysTargetScale.x
@@ -43877,11 +43893,31 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3396225522924585539, guid: 2d9375674999f234493c06101bc5c824, type: 3}
       propertyPath: fogTransitionDuration
-      value: 4
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 3396225522924585539, guid: 2d9375674999f234493c06101bc5c824, type: 3}
       propertyPath: deactivateMystifyWhenZero
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3396225522924585539, guid: 2d9375674999f234493c06101bc5c824, type: 3}
+      propertyPath: timedLightsStartIntensity
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3396225522924585539, guid: 2d9375674999f234493c06101bc5c824, type: 3}
+      propertyPath: timedLight1TargetIntensity
+      value: 195
+      objectReference: {fileID: 0}
+    - target: {fileID: 3396225522924585539, guid: 2d9375674999f234493c06101bc5c824, type: 3}
+      propertyPath: timedLight2TargetIntensity
+      value: 195
+      objectReference: {fileID: 0}
+    - target: {fileID: 3396225522924585539, guid: 2d9375674999f234493c06101bc5c824, type: 3}
+      propertyPath: timedLightsIncreaseInterval
+      value: 7.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3396225522924585539, guid: 2d9375674999f234493c06101bc5c824, type: 3}
+      propertyPath: timedLightsTransitionDuration
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 3396225522924585539, guid: 2d9375674999f234493c06101bc5c824, type: 3}
       propertyPath: godRaysScaleCurve.m_Curve.Array.data[0].inSlope

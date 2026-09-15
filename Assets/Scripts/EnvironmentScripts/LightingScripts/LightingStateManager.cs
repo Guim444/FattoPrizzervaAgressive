@@ -111,6 +111,26 @@ public class LightingStateManager : MonoBehaviour
     [Tooltip("Distancia objetivo final al entrar a la iglesia (por defecto 38).")]
     [SerializeField, Min(0f)] private float fogEndDistance = 38f;
 
+    [Header("Timed Lights")]
+    [Tooltip("Primera luz a activar por intervalos.")]
+    [SerializeField] private Light timedLight1;
+    [Tooltip("Segunda luz a activar por intervalos.")]
+    [SerializeField] private Light timedLight2;
+    [Tooltip("Si está marcado, desactiva las luces en Start además de poner su intensidad a la inicial.")]
+    [SerializeField] private bool deactivateTimedLightsOnStart = true;
+    [Tooltip("Intensidad inicial antes de comenzar los aumentos.")]
+    [SerializeField, Min(0f)] private float timedLightsStartIntensity = 0f;
+    [Tooltip("Intensidad objetivo para la primera luz.")]
+    [SerializeField, Min(0f)] private float timedLight1TargetIntensity = 1f;
+    [Tooltip("Intensidad objetivo para la segunda luz.")]
+    [SerializeField, Min(0f)] private float timedLight2TargetIntensity = 1f;
+    [Tooltip("Tiempo de espera antes de comenzar la activación de la primera luz (en segundos).")]
+    [SerializeField, Min(0f)] private float timedLight1Delay = 0f;
+    [Tooltip("Tiempo de espera antes de comenzar la activación de la segunda luz (en segundos).")]
+    [SerializeField, Min(0f)] private float timedLight2Delay = 0f;
+    [Tooltip("Tiempo que tarda la transición de intensidad con SmoothStep (en segundos).")]
+    [SerializeField, Min(0.01f)] private float timedLightsTransitionDuration = 1.5f;
+
     [Header("Play Mode Test")]
     [SerializeField] private LightingState _previewState;
     [SerializeField] private bool enableKeyboardShortcuts = true;
@@ -122,6 +142,8 @@ public class LightingStateManager : MonoBehaviour
     private Coroutine _godRaysCoroutine;
     private Coroutine _mystifyCoroutine;
     private Coroutine _distantFogCoroutine;
+    private Coroutine _timedLight1Coroutine;
+    private Coroutine _timedLight2Coroutine;
     private bool _godRaysTriggered;
     private readonly List<GameObject> _activatedByManager = new List<GameObject>();
     private readonly Dictionary<Light, FireVisualScript> _fireVisualsByLight =
@@ -143,6 +165,7 @@ public class LightingStateManager : MonoBehaviour
         InitGodRays();
         InitMystifyEffect();
         //InitDistantFog();
+        InitTimedLights();
     }
 
     private void EnsureSkyHighlightReference()
@@ -182,6 +205,23 @@ public class LightingStateManager : MonoBehaviour
             godRay2.transform.localScale = Vector3.zero;
             if (deactivateGodRaysOnStart)
                 godRay2.SetActive(false);
+        }
+    }
+
+    private void InitTimedLights()
+    {
+        if (timedLight1 != null)
+        {
+            ApplyLightIntensity(timedLight1, timedLightsStartIntensity);
+            if (deactivateTimedLightsOnStart)
+                timedLight1.gameObject.SetActive(false);
+        }
+
+        if (timedLight2 != null)
+        {
+            ApplyLightIntensity(timedLight2, timedLightsStartIntensity);
+            if (deactivateTimedLightsOnStart)
+                timedLight2.gameObject.SetActive(false);
         }
     }
 
@@ -284,6 +324,24 @@ public class LightingStateManager : MonoBehaviour
             StopCoroutine(_distantFogCoroutine);
 
         _distantFogCoroutine = StartCoroutine(DistantFogRoutine());
+
+        TriggerTimedLights();
+    }
+
+    /// <summary>
+    /// Inicia la secuencia de activación y aumento de intensidad en intervalos para las dos luces temporizadas.
+    /// </summary>
+    public void TriggerTimedLights()
+    {
+        if (_timedLight1Coroutine != null)
+            StopCoroutine(_timedLight1Coroutine);
+
+        _timedLight1Coroutine = StartCoroutine(AnimateTimedLightRoutine(timedLight1, timedLight1Delay, timedLight1TargetIntensity));
+
+        if (_timedLight2Coroutine != null)
+            StopCoroutine(_timedLight2Coroutine);
+
+        _timedLight2Coroutine = StartCoroutine(AnimateTimedLightRoutine(timedLight2, timedLight2Delay, timedLight2TargetIntensity));
     }
 
     /// <summary>
@@ -309,10 +367,53 @@ public class LightingStateManager : MonoBehaviour
             _distantFogCoroutine = null;
         }
 
+        if (_timedLight1Coroutine != null)
+        {
+            StopCoroutine(_timedLight1Coroutine);
+            _timedLight1Coroutine = null;
+        }
+
+        if (_timedLight2Coroutine != null)
+        {
+            StopCoroutine(_timedLight2Coroutine);
+            _timedLight2Coroutine = null;
+        }
+
         _godRaysTriggered = false;
         InitGodRays();
         InitMystifyEffect();
         InitDistantFog();
+        InitTimedLights();
+    }
+
+    private IEnumerator AnimateTimedLightRoutine(Light targetLight, float delay, float targetIntensity)
+    {
+        if (targetLight == null)
+            yield break;
+
+        ApplyLightIntensity(targetLight, timedLightsStartIntensity);
+
+        if (delay > 0f)
+            yield return new WaitForSeconds(delay);
+
+        if (!targetLight.gameObject.activeSelf)
+            targetLight.gameObject.SetActive(true);
+
+        float duration = Mathf.Max(0.001f, timedLightsTransitionDuration);
+        float elapsed = 0f;
+        float startIntensity = timedLightsStartIntensity;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float smoothT = Mathf.SmoothStep(0f, 1f, t);
+            float currentIntensity = Mathf.Lerp(startIntensity, targetIntensity, smoothT);
+            ApplyLightIntensity(targetLight, currentIntensity);
+            yield return null;
+        }
+
+        ApplyLightIntensity(targetLight, targetIntensity);
     }
 
     private IEnumerator DistantFogRoutine()
@@ -709,6 +810,12 @@ public class LightingStateManager : MonoBehaviour
     private void CacheFireVisuals()
     {
         _fireVisualsByLight.Clear();
+
+        if (timedLight1 != null && timedLight1.TryGetComponent(out FireVisualScript fv1))
+            _fireVisualsByLight[timedLight1] = fv1;
+
+        if (timedLight2 != null && timedLight2.TryGetComponent(out FireVisualScript fv2))
+            _fireVisualsByLight[timedLight2] = fv2;
 
         foreach (var state in states)
         {

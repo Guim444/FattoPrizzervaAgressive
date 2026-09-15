@@ -413,7 +413,7 @@ public class IntroSequenceManager : MonoBehaviour
         if (playerAnimator != null)
         {
             playerAnimator.enabled = true;
-            SetHumanForm();
+            EnsurePhaseAnimation(Phase1ShortHash, Phase1FullHash);
         }
 
         if (sceneFadeScreen != null)
@@ -817,8 +817,103 @@ public class IntroSequenceManager : MonoBehaviour
         }
     }
 
+    private void EnsurePhaseAnimation(int shortHash, int fullHash)
+    {
+        if (playerAnimator == null || !playerAnimator.enabled)
+            return;
+
+        AnimatorStateInfo stateInfo = playerAnimator.GetCurrentAnimatorStateInfo(0);
+        if (stateInfo.shortNameHash == shortHash || stateInfo.fullPathHash == fullHash)
+            return;
+
+        if (playerAnimator.HasState(0, shortHash))
+            playerAnimator.Play(shortHash, 0, 0f);
+        else if (playerAnimator.HasState(0, fullHash))
+            playerAnimator.Play(fullHash, 0, 0f);
+    }
+
+    private bool TryGetSortedQuarterBoundaries(out float boundary1, out float boundary2, out float boundary3)
+    {
+        if (blinkQuarterMarkers == null ||
+            blinkQuarterMarkers.Length != 3 ||
+            blinkQuarterMarkers[0] == null ||
+            blinkQuarterMarkers[1] == null ||
+            blinkQuarterMarkers[2] == null)
+        {
+            boundary1 = float.MaxValue;
+            boundary2 = float.MaxValue;
+            boundary3 = float.MaxValue;
+            return false;
+        }
+
+        boundary1 = blinkQuarterMarkers[0].position.x;
+        boundary2 = blinkQuarterMarkers[1].position.x;
+        boundary3 = blinkQuarterMarkers[2].position.x;
+
+        if (boundary1 > boundary2) (boundary1, boundary2) = (boundary2, boundary1);
+        if (boundary2 > boundary3) (boundary2, boundary3) = (boundary3, boundary2);
+        if (boundary1 > boundary2) (boundary1, boundary2) = (boundary2, boundary1);
+        return true;
+    }
+
     private IEnumerator BlinkCoroutine()
     {
+        if (TryGetSortedQuarterBoundaries(out float boundary1, out float boundary2, out float boundary3))
+        {
+            // Tramo 1: Mientras esté antes del primer marcador, mantiene Phase 1
+            while (playerTransform != null && playerTransform.position.x < boundary1)
+            {
+                EnsurePhaseAnimation(Phase1ShortHash, Phase1FullHash);
+                yield return null;
+                TryGetSortedQuarterBoundaries(out boundary1, out boundary2, out boundary3);
+            }
+
+            // Tramo 2: Phase 2 en bucle durante la fase 2
+            EnsurePhaseAnimation(Phase2ShortHash, Phase2FullHash);
+            while (playerTransform != null && playerTransform.position.x < boundary2)
+            {
+                EnsurePhaseAnimation(Phase2ShortHash, Phase2FullHash);
+                yield return null;
+                TryGetSortedQuarterBoundaries(out boundary1, out boundary2, out boundary3);
+            }
+
+            // Transición a 3: Al llegar al marcador de la fase 3, reproduce la transición completa
+            if (playerAnimator != null && playerAnimator.enabled &&
+                (playerAnimator.HasState(0, Phase3TransitionShortHash) || playerAnimator.HasState(0, Phase3TransitionFullHash)))
+            {
+                int transitionHash = playerAnimator.HasState(0, Phase3TransitionShortHash)
+                    ? Phase3TransitionShortHash
+                    : Phase3TransitionFullHash;
+
+                playerAnimator.Play(transitionHash, 0, 0f);
+                playerAnimator.Update(0f);
+                yield return null;
+
+                float transitionDuration = 4.12f;
+                float elapsed = 0f;
+                if (playerAnimator != null && playerAnimator.enabled)
+                {
+                    AnimatorStateInfo initialInfo = playerAnimator.GetCurrentAnimatorStateInfo(0);
+                    if (initialInfo.length > 0f)
+                        transitionDuration = initialInfo.length;
+                }
+
+                while (playerAnimator != null && playerAnimator.enabled && !lockHumanForm)
+                {
+                    elapsed += Time.deltaTime;
+                    AnimatorStateInfo stateInfo = playerAnimator.GetCurrentAnimatorStateInfo(0);
+                    bool isTransitionState = stateInfo.shortNameHash == Phase3TransitionShortHash ||
+                                             stateInfo.fullPathHash == Phase3TransitionFullHash;
+
+                    if ((isTransitionState && stateInfo.normalizedTime >= 1.0f) || elapsed >= transitionDuration)
+                        break;
+
+                    yield return null;
+                }
+            }
+        }
+
+        // A partir de aquí: Se queda ciclando como hacía hasta ahora
         while (true)
         {
             if (lockHumanForm)
@@ -928,11 +1023,7 @@ public class IntroSequenceManager : MonoBehaviour
 
     private float GetTransformationProgress()
     {
-        if (blinkQuarterMarkers == null ||
-            blinkQuarterMarkers.Length != 3 ||
-            blinkQuarterMarkers[0] == null ||
-            blinkQuarterMarkers[1] == null ||
-            blinkQuarterMarkers[2] == null)
+        if (!TryGetSortedQuarterBoundaries(out float boundary1, out float boundary2, out float boundary3))
         {
             if (!_hasWarnedInvalidBlinkQuarterMarkers)
             {
@@ -945,14 +1036,6 @@ public class IntroSequenceManager : MonoBehaviour
 
         _hasWarnedInvalidBlinkQuarterMarkers = false;
 
-        float boundary1 = blinkQuarterMarkers[0].position.x;
-        float boundary2 = blinkQuarterMarkers[1].position.x;
-        float boundary3 = blinkQuarterMarkers[2].position.x;
-
-        if (boundary1 > boundary2) (boundary1, boundary2) = (boundary2, boundary1);
-        if (boundary2 > boundary3) (boundary2, boundary3) = (boundary3, boundary2);
-        if (boundary1 > boundary2) (boundary1, boundary2) = (boundary2, boundary1);
-
         float x = playerTransform.position.x;
 
         if (x < boundary1) return ratioQ1;
@@ -963,6 +1046,12 @@ public class IntroSequenceManager : MonoBehaviour
 
     public void RestoreOriginalAnimator()
     {
+        if (_blinkCoroutine != null)
+        {
+            StopCoroutine(_blinkCoroutine);
+            _blinkCoroutine = null;
+        }
+
         RestoreIntroPlayerControlSettings();
 
         if (playerAnimator != null && _originalAnimatorController != null)
@@ -978,6 +1067,12 @@ public class IntroSequenceManager : MonoBehaviour
 
     private void OnDisable()
     {
+        if (_blinkCoroutine != null)
+        {
+            StopCoroutine(_blinkCoroutine);
+            _blinkCoroutine = null;
+        }
+
         RestoreIntroPlayerControlSettings();
         RestoreGameplayAnimatorControl();
     }

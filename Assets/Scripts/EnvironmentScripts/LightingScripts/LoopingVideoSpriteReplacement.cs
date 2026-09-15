@@ -11,7 +11,7 @@ public class LoopingVideoSpriteReplacement : MonoBehaviour
     [SerializeField] private bool keepSpriteUntilPrepared = true;
     [SerializeField, Min(0)] private int renderTextureWidth = 0;
     [SerializeField, Min(0)] private int renderTextureHeight = 0;
-    [SerializeField] private int alphaValue = 255;
+    [SerializeField, Range(0, 255)] private int alphaValue = 255;
 
     [Header("Surface")]
     [SerializeField] private string surfaceName = "VideoSurface";
@@ -225,6 +225,37 @@ public class LoopingVideoSpriteReplacement : MonoBehaviour
         }
     }
 
+    private void OnValidate()
+    {
+        if (_material != null)
+            ApplyAlphaToMaterial(_material);
+    }
+
+    public int AlphaValue
+    {
+        get => alphaValue;
+        set
+        {
+            alphaValue = Mathf.Clamp(value, 0, 255);
+            if (_material != null)
+                ApplyAlphaToMaterial(_material);
+        }
+    }
+
+    public void SetAlpha(int alpha) => AlphaValue = alpha;
+    public void SetAlphaNormalized(float alpha01) => AlphaValue = Mathf.RoundToInt(Mathf.Clamp01(alpha01) * 255f);
+
+    private void ApplyAlphaToMaterial(Material mat)
+    {
+        if (mat == null) return;
+
+        float normalizedAlpha = Mathf.Clamp01(alphaValue / 255f);
+        Color tintColor = new Color(1f, 1f, 1f, normalizedAlpha);
+
+        if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", tintColor);
+        if (mat.HasProperty("_Color")) mat.SetColor("_Color", tintColor);
+    }
+
     private void HandleVideoPrepared(VideoPlayer source)
     {
         ShowVideoSurface();
@@ -293,13 +324,11 @@ public class LoopingVideoSpriteReplacement : MonoBehaviour
         if (material.HasProperty("_ZWrite")) material.SetFloat("_ZWrite", 0f);
         if (material.HasProperty("_SrcBlend")) material.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
         if (material.HasProperty("_DstBlend")) material.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
+        if (material.HasProperty("_SrcBlendAlpha")) material.SetFloat("_SrcBlendAlpha", (float)BlendMode.One);
+        if (material.HasProperty("_DstBlendAlpha")) material.SetFloat("_DstBlendAlpha", (float)BlendMode.OneMinusSrcAlpha);
         if (material.HasProperty("_Cull")) material.SetFloat("_Cull", (float)CullMode.Off);
 
-        Color white = Color.white;
-        white.a = alphaValue;
-
-        if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", Color.white);
-        if (material.HasProperty("_Color")) material.SetColor("_Color", Color.white);
+        ApplyAlphaToMaterial(material);
 
         material.SetOverrideTag("RenderType", "Transparent");
         material.renderQueue = (int)RenderQueue.Transparent;
