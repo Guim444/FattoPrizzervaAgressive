@@ -2745,6 +2745,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0.018
       objectReference: {fileID: 0}
+    - target: {fileID: 3021329302969963005, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3021329302969963005, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.07
+      objectReference: {fileID: 0}
+    - target: {fileID: 3021329302969963005, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 1.2
+      objectReference: {fileID: 0}
     - target: {fileID: 3136478325201886202, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
       propertyPath: myCamera
       value: 
@@ -11096,6 +11108,7 @@ MonoBehaviour:
   ratioQ2: 0.578
   ratioQ3: 0.886
   ratioQ4: 1
+  timeDelayRiotutteAnim: 4
   lockHumanForm: 0
   introAnimatorController: {fileID: 9100000, guid: 857fd31268726194e9441f46f1a0475e, type: 2}
 --- !u!114 &2021292074
