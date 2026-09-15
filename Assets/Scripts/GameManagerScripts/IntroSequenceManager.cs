@@ -17,8 +17,6 @@ public class IntroSequenceManager : MonoBehaviour
     private static readonly int Phase1FullHash = Animator.StringToHash("Base Layer.Phase 1");
     private static readonly int Phase2ShortHash = Animator.StringToHash("Phase 2");
     private static readonly int Phase2FullHash = Animator.StringToHash("Base Layer.Phase 2");
-    private static readonly int Phase3TransitionShortHash = Animator.StringToHash("Phase 3Transition");
-    private static readonly int Phase3TransitionFullHash = Animator.StringToHash("Base Layer.Phase 3Transition");
 
     [Header("References")]
     [SerializeField] private Camera mainCamera;
@@ -134,6 +132,7 @@ public class IntroSequenceManager : MonoBehaviour
     private bool[] _originalRendererEnabledStates;
     private Coroutine _blinkCoroutine;
     private Coroutine _churchSequenceCoroutine;
+    private Coroutine _churchCameraTransitionCoroutine;
     private Coroutine _dialogueReturnCoroutine;
     private CinemachineFramingTransposer _introFramingTransposer;
     private Vector3 _originalIntroTrackedObjectOffset;
@@ -532,8 +531,8 @@ public class IntroSequenceManager : MonoBehaviour
         SetPlayerFadeAlpha(1f);
         _activePlayerFadeAlpha = -1f;
         RestoreOriginalColors();
-        RestoreOriginalMaterials();
-        _playerFadeMaterialRestored = true;
+        //RestoreOriginalMaterials();
+        //_playerFadeMaterialRestored = true;
     }
 
     private void KeepPlayerAtIntroDepth()
@@ -921,46 +920,11 @@ public class IntroSequenceManager : MonoBehaviour
                 TryGetSortedQuarterBoundaries(out boundary1, out boundary2, out boundary3);
             }
 
-            // Espera a que termine el ciclo actual de Phase 2 antes de transicionar a Phase 3Transition
+            // Espera a que termine el ciclo actual de Phase 2 antes de transicionar al comportamiento del tramo 3
             yield return StartCoroutine(WaitForCurrentAnimationCycleToEnd(Phase2ShortHash, Phase2FullHash));
-
-            // Transición a 3: Al llegar al marcador de la fase 3, reproduce la transición completa
-            if (playerAnimator != null && playerAnimator.enabled &&
-                (playerAnimator.HasState(0, Phase3TransitionShortHash) || playerAnimator.HasState(0, Phase3TransitionFullHash)))
-            {
-                int transitionHash = playerAnimator.HasState(0, Phase3TransitionShortHash)
-                    ? Phase3TransitionShortHash
-                    : Phase3TransitionFullHash;
-
-                playerAnimator.Play(transitionHash, 0, 0f);
-                playerAnimator.Update(0f);
-                yield return null;
-
-                float transitionDuration = 4.12f;
-                float elapsed = 0f;
-                if (playerAnimator != null && playerAnimator.enabled)
-                {
-                    AnimatorStateInfo initialInfo = playerAnimator.GetCurrentAnimatorStateInfo(0);
-                    if (initialInfo.length > 0f)
-                        transitionDuration = initialInfo.length;
-                }
-
-                while (playerAnimator != null && playerAnimator.enabled && !lockHumanForm)
-                {
-                    elapsed += Time.deltaTime;
-                    AnimatorStateInfo stateInfo = playerAnimator.GetCurrentAnimatorStateInfo(0);
-                    bool isTransitionState = stateInfo.shortNameHash == Phase3TransitionShortHash ||
-                                             stateInfo.fullPathHash == Phase3TransitionFullHash;
-
-                    if ((isTransitionState && stateInfo.normalizedTime >= 1.0f) || elapsed >= transitionDuration)
-                        break;
-
-                    yield return null;
-                }
-            }
         }
 
-        // A partir de aquí: Se queda ciclando como hacía hasta ahora
+        // A partir de aquí (Tramo 3 y Tramo 4): Comportamiento de parpadeo con ratioQ3 y ratioQ4
         while (true)
         {
             if (lockHumanForm)
@@ -1099,6 +1063,12 @@ public class IntroSequenceManager : MonoBehaviour
             _blinkCoroutine = null;
         }
 
+        if (_churchCameraTransitionCoroutine != null)
+        {
+            StopCoroutine(_churchCameraTransitionCoroutine);
+            _churchCameraTransitionCoroutine = null;
+        }
+
         RestoreIntroPlayerControlSettings();
 
         if (playerAnimator != null && _originalAnimatorController != null)
@@ -1118,6 +1088,12 @@ public class IntroSequenceManager : MonoBehaviour
         {
             StopCoroutine(_blinkCoroutine);
             _blinkCoroutine = null;
+        }
+
+        if (_churchCameraTransitionCoroutine != null)
+        {
+            StopCoroutine(_churchCameraTransitionCoroutine);
+            _churchCameraTransitionCoroutine = null;
         }
 
         RestoreIntroPlayerControlSettings();
@@ -1170,7 +1146,8 @@ public class IntroSequenceManager : MonoBehaviour
         Transform rioTutteTransformation,
         float autoMoveCameraY,
         string dialogueSceneName,
-        string lightingSceneName)
+        string lightingSceneName,
+        float cameraTransitionDelay = -1f)
     {
         if (_churchSequenceCoroutine != null)
             return false;
@@ -1213,7 +1190,8 @@ public class IntroSequenceManager : MonoBehaviour
             rioTutteTransformation,
             autoMoveCameraY,
             dialogueSceneName,
-            lightingSceneName));
+            lightingSceneName,
+            cameraTransitionDelay));
         return true;
     }
 
@@ -1226,7 +1204,8 @@ public class IntroSequenceManager : MonoBehaviour
         Transform rioTutteTransformation,
         float autoMoveCameraY,
         string dialogueSceneName,
-        string lightingSceneName)
+        string lightingSceneName,
+        float cameraTransitionDelay = -1f)
     {
         if (_blinkCoroutine != null)
         {
@@ -1234,7 +1213,14 @@ public class IntroSequenceManager : MonoBehaviour
             _blinkCoroutine = null;
         }
 
+        if (_churchCameraTransitionCoroutine != null)
+        {
+            StopCoroutine(_churchCameraTransitionCoroutine);
+            _churchCameraTransitionCoroutine = null;
+        }
+
         RestoreOriginalAnimator();
+        RestoreOriginalMaterials();
         PauseGameplayAnimatorControl();
 
         if (playerAnimator != null) playerAnimator.enabled = true;
@@ -1247,6 +1233,11 @@ public class IntroSequenceManager : MonoBehaviour
         EnterChurchLighting(lightingSceneName);
 
         StartCoroutine(AnimateRiotutteStandard(rioTutteStandard));
+
+        if (cameraTransitionDelay >= 0f)
+        {
+            _churchCameraTransitionCoroutine = StartCoroutine(DelayedChurchCameraTransition(cameraTransitionDelay));
+        }
 
         Coroutine cameraLowering = StartCoroutine(LowerCameraDuringAutoMove(autoMoveCameraY, firstDuration));
         yield return StartCoroutine(MovePlayerToPosition(firstTarget.position, firstDuration));
@@ -1288,6 +1279,15 @@ public class IntroSequenceManager : MonoBehaviour
         }
 
         _churchSequenceCoroutine = null;
+    }
+
+    private IEnumerator DelayedChurchCameraTransition(float delay)
+    {
+        if (delay > 0f)
+            yield return new WaitForSeconds(delay);
+
+        hudManager?.CompleteChurchTestCameraTransition();
+        _churchCameraTransitionCoroutine = null;
     }
 
     private IEnumerator AnimateRiotutteStandard(Transform rioTutteStandard)

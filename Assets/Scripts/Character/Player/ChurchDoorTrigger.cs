@@ -17,6 +17,10 @@ public class ChurchDoorTrigger : MonoBehaviour
     [Header("Camera")]
     [Tooltip("Altura temporal de cámara durante los automoves.")]
     [SerializeField] private float autoMoveCameraY = 3f;
+    [Tooltip("Activa la transición automática hacia la vista de prueba/gameplay tras un tiempo determinado.")]
+    [SerializeField] private bool enableTimedCameraTransition = true;
+    [Tooltip("Tiempo en segundos desde que se entra al trigger para que la cámara empiece a ir hacia la posición de prueba/gameplay.")]
+    [SerializeField, Min(0f)] private float cameraTransitionDelay = 0f;
 
     [Header("Dialogue Layout")]
     [Tooltip("Escena que contiene únicamente el canvas usado durante el diálogo.")]
@@ -47,6 +51,8 @@ public class ChurchDoorTrigger : MonoBehaviour
             return;
         }
 
+        float transitionDelay = enableTimedCameraTransition ? cameraTransitionDelay : -1f;
+
         triggered = introSequenceManager.TryStartChurchSequence(
             firstAutoMoveTarget,
             firstAutoMoveDuration,
@@ -56,6 +62,7 @@ public class ChurchDoorTrigger : MonoBehaviour
             rioTutteTransformation,
             autoMoveCameraY,
             dialogueSceneName,
-            lightingSceneName);
+            lightingSceneName,
+            transitionDelay);
     }
 }

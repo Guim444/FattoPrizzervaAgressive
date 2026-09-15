@@ -825,7 +825,7 @@ Transform:
   m_GameObject: {fileID: 109663031}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -47.53, y: 0, z: 0}
+  m_LocalPosition: {x: -56.2, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2368,7 +2368,7 @@ Transform:
   m_GameObject: {fileID: 350355006}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -33.47, y: 0, z: 0}
+  m_LocalPosition: {x: -42.31, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2575,6 +2575,8 @@ MonoBehaviour:
   rioTutteStandard: {fileID: 1209652340}
   rioTutteTransformation: {fileID: 2123647840}
   autoMoveCameraY: 6
+  enableTimedCameraTransition: 1
+  cameraTransitionDelay: 9
   dialogueSceneName: DialogueScene
   lightingSceneName: LightingScene
   _blizzardVideos: {fileID: 857668447}
@@ -3149,7 +3151,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &642173049
 Transform:
   m_ObjectHideFlags: 0
@@ -5720,7 +5722,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1184177114
 Transform:
   m_ObjectHideFlags: 0
@@ -5730,7 +5732,7 @@ Transform:
   m_GameObject: {fileID: 1184177113}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.29, y: 0, z: -4.44}
+  m_LocalPosition: {x: 2.92, y: 0, z: -4.44}
   m_LocalScale: {x: 0.13, y: 5.65, z: 4.81}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10250,7 +10252,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1831825129
 Transform:
   m_ObjectHideFlags: 0
@@ -11102,11 +11104,11 @@ MonoBehaviour:
   - {fileID: 1098977468}
   - {fileID: 109663032}
   - {fileID: 350355007}
-  blinkInterval: 5
-  fullGhostIdleDuration: 4
+  blinkInterval: 4
+  fullGhostIdleDuration: 5
   ratioQ1: 0.299
   ratioQ2: 0.578
-  ratioQ3: 0.886
+  ratioQ3: 0.743
   ratioQ4: 1
   timeDelayRiotutteAnim: 4
   lockHumanForm: 0
