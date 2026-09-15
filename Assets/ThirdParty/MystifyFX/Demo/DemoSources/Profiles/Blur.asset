@@ -21,7 +21,7 @@ MonoBehaviour:
   alwaysOn: 1
   maskTexture: {fileID: 0}
   alphaCutoff: 0
-  globalOpacity: 1
+  globalOpacity: 0.7
   useStopMotion: 0
   stopMotionInterval: 0.125
   scaleFactor: 1
