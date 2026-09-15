@@ -205,9 +205,10 @@ public class HUDManager : MonoBehaviour
         Time.timeScale = 1f;
         playerBoundary.enabled = false;
         OutsideChurch.SetActive(false);
-        enemy.SetActive(false);
+        playerTransformFront.SetActive(true);
+        playerTransformFront.GetComponent<Animator>().enabled = false;
+        enemy.SetActive(true);
         enemyRio.SetActive(false);
-        playerTransformFront.SetActive(false);
         MoveStartPlayerToX(startPositionX - distanceToStart);
         ringManager.enabled = false;
         SetPlayerIdleFrontIfAvailable(true);

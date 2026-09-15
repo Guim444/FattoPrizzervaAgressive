@@ -1101,7 +1101,8 @@ public class IntroSequenceManager : MonoBehaviour
         Coroutine cameraLowering = StartCoroutine(LowerCameraDuringAutoMove(autoMoveCameraY, firstDuration));
         yield return StartCoroutine(MovePlayerToPosition(firstTarget.position, firstDuration));
 
-        ShowRioTutteTransformation(rioTutteStandard, rioTutteTransformation);
+        rioTutteStandard.GetComponent<Animator>().enabled = true;
+
         ApplyEnvironmentPhase(3);
 
         yield return StartCoroutine(MovePlayerToPosition(secondTarget.position, secondDuration));
@@ -1110,6 +1111,8 @@ public class IntroSequenceManager : MonoBehaviour
             StopCoroutine(cameraLowering);
 
         RestoreIntroCameraFraming();
+
+        ShowRioTutteTransformation(rioTutteStandard, rioTutteTransformation);
 
         if (!EnterDialogueLayout(lightingSceneName, dialogueSceneName))
         {
