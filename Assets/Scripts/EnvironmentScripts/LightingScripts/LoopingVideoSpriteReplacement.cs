@@ -11,6 +11,7 @@ public class LoopingVideoSpriteReplacement : MonoBehaviour
     [SerializeField] private bool keepSpriteUntilPrepared = true;
     [SerializeField, Min(0)] private int renderTextureWidth = 0;
     [SerializeField, Min(0)] private int renderTextureHeight = 0;
+    [SerializeField] private int alphaValue = 255;
 
     [Header("Surface")]
     [SerializeField] private string surfaceName = "VideoSurface";
@@ -293,6 +294,10 @@ public class LoopingVideoSpriteReplacement : MonoBehaviour
         if (material.HasProperty("_SrcBlend")) material.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
         if (material.HasProperty("_DstBlend")) material.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
         if (material.HasProperty("_Cull")) material.SetFloat("_Cull", (float)CullMode.Off);
+
+        Color white = Color.white;
+        white.a = alphaValue;
+
         if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", Color.white);
         if (material.HasProperty("_Color")) material.SetColor("_Color", Color.white);
 

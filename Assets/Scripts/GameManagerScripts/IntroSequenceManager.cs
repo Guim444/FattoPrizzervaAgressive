@@ -13,6 +13,12 @@ public class IntroSequenceManager : MonoBehaviour
     private static readonly int IdleHumanFrontStateHash = Animator.StringToHash("Base Layer.IdleHumanFront");
     private static readonly int TransformToHumanStateHash = Animator.StringToHash("Base Layer.TransformToHuman");
     private static readonly int TransformToGhostStateHash = Animator.StringToHash("Base Layer.TransformToGhost");
+    private static readonly int Phase1ShortHash = Animator.StringToHash("Phase 1");
+    private static readonly int Phase1FullHash = Animator.StringToHash("Base Layer.Phase 1");
+    private static readonly int Phase2ShortHash = Animator.StringToHash("Phase 2");
+    private static readonly int Phase2FullHash = Animator.StringToHash("Base Layer.Phase 2");
+    private static readonly int Phase3TransitionShortHash = Animator.StringToHash("Phase 3Transition");
+    private static readonly int Phase3TransitionFullHash = Animator.StringToHash("Base Layer.Phase 3Transition");
 
     [Header("References")]
     [SerializeField] private Camera mainCamera;
