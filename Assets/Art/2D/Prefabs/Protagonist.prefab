@@ -142,6 +142,7 @@ MonoBehaviour:
   depthScaler: {fileID: 0}
   stateMachineController: {fileID: 0}
   combatAttackHandler: {fileID: 0}
+  walkAlphaFade: {fileID: 0}
   canMove: 1
   canSprint: 1
   isGrounded: 0

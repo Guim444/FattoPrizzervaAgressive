@@ -4,6 +4,7 @@ using Cinemachine;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Rendering.Universal;
+using Unity.VisualScripting;
 
 public class IntroSequenceManager : MonoBehaviour
 {
@@ -32,6 +33,11 @@ public class IntroSequenceManager : MonoBehaviour
     [SerializeField] private Light playerSorroundLight;
     [Tooltip("Duración del apagado progresivo de la luz del jugador.")]
     [SerializeField, Min(0f)] private float playerSurroundLightFadeDuration = 2f;
+    [SerializeField] private Light playerMovingLight;
+    [Tooltip("Posición local objetivo en el eje X para la luz al entrar en la iglesia.")]
+    [SerializeField] private float playerMovingLightTargetX;
+    [Tooltip("Duración del desplazamiento en el eje X de la luz.")]
+    [SerializeField, Min(0f)] private float playerMovingLightDuration = 2f;
 
     [Header("Dialogue Placement")]
     [Tooltip("Superficie sobre la que se coloca al jugador al activar la escena de diálogo.")]
@@ -1412,9 +1418,45 @@ public class IntroSequenceManager : MonoBehaviour
         LightingStateManager.TriggerChurchLighting();
         EnvironmentStateManager.DeactivateAllDoorBraziers();
 
-        if (!playerSorroundLight) return;
+        if (playerSorroundLight != null)
+        {
+            StartCoroutine(DeactivatePlayerSorroundingLight());
+        }
 
-        StartCoroutine(DeactivatePlayerSorroundingLight());
+        if (playerMovingLight != null)
+        {
+            StartCoroutine(MovePlayerLightX());        
+        }
+    }
+
+    private IEnumerator MovePlayerLightX()
+    {
+        if (playerMovingLight == null) yield break;
+
+        float startX = playerMovingLight.transform.localPosition.x;
+        float elapsed = 0f;
+
+        if (playerMovingLightDuration <= 0f)
+        {
+            Vector3 pos = playerMovingLight.transform.localPosition;
+            pos.x = playerMovingLightTargetX;
+            playerMovingLight.transform.localPosition = pos;
+            yield break;
+        }
+
+        while (elapsed < playerMovingLightDuration)
+        {
+            elapsed += Time.deltaTime;
+            float progress = Mathf.Clamp01(elapsed / playerMovingLightDuration);
+            Vector3 pos = playerMovingLight.transform.localPosition;
+            pos.x = Mathf.Lerp(startX, playerMovingLightTargetX, progress);
+            playerMovingLight.transform.localPosition = pos;
+            yield return null;
+        }
+
+        Vector3 finalPos = playerMovingLight.transform.localPosition;
+        finalPos.x = playerMovingLightTargetX;
+        playerMovingLight.transform.localPosition = finalPos;
     }
 
     private IEnumerator DeactivatePlayerSorroundingLight()

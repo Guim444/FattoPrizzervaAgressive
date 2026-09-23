@@ -11,6 +11,7 @@ public class PlayerInputHandler : MonoBehaviour, Actions.IPlayerActions
     private Actions _actions;
     private Actions.PlayerActions _playerActions;
     private InputAction _punchAction;
+    private InputAction _spaceAction;
 
     private Vector2 _moveInput;
 
@@ -25,6 +26,10 @@ public class PlayerInputHandler : MonoBehaviour, Actions.IPlayerActions
 
     /// <summary>True only on the frame the punch was pressed (consumed at end of Update).</summary>
     public bool IsPunchInputPressed { get; private set; }
+
+    /// <summary>True only on the frame space was pressed (consumed at end of Update).</summary>
+    public bool IsSpacePressed { get; private set; }
+
     void Awake()
     {
         _actions = new Actions();
@@ -45,6 +50,15 @@ public class PlayerInputHandler : MonoBehaviour, Actions.IPlayerActions
             Debug.LogWarning(
                 "PlayerInputHandler: action 'PunchStarted' not found in 'Player' map of Actions.inputactions.");
         }
+
+        _spaceAction = playerMap.FindAction("Space", throwIfNotFound: false);
+        if (_spaceAction == null)
+            _spaceAction = playerMap.FindAction("Jump", throwIfNotFound: false);
+
+        if (_spaceAction != null)
+        {
+            _spaceAction.started += OnSpaceStarted;
+        }
     }
 
     void OnEnable()
@@ -59,6 +73,7 @@ public class PlayerInputHandler : MonoBehaviour, Actions.IPlayerActions
         IsRunInputHeld = false;
         IsPunchInputHeld = false;
         IsPunchInputPressed = false;
+        IsSpacePressed = false;
     }
 
     void OnDestroy()
@@ -69,9 +84,24 @@ public class PlayerInputHandler : MonoBehaviour, Actions.IPlayerActions
             _punchAction.canceled -= OnPunchCanceled;
         }
 
+        if (_spaceAction != null)
+        {
+            _spaceAction.started -= OnSpaceStarted;
+        }
+
         _playerActions.RemoveCallbacks(this);
         _actions.Dispose();
     }
+
+    void Update()
+    {
+        // Direct fallback for Space key if no InputAction is triggered
+        if (!IsSpacePressed && Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
+        {
+            IsSpacePressed = true;
+        }
+    }
+
     public void OnMovement(InputAction.CallbackContext context)
     {
         _moveInput = context.ReadValue<Vector2>();
@@ -93,17 +123,28 @@ public class PlayerInputHandler : MonoBehaviour, Actions.IPlayerActions
         IsPunchInputHeld = false;
     }
 
+    private void OnSpaceStarted(InputAction.CallbackContext _)
+    {
+        IsSpacePressed = true;
+    }
+
     /// <summary>
     /// Resets single-frame flags. Must be called at the end of PlayerController.Update().
     /// </summary>
     public void ConsumeFrameInputs()
     {
         IsPunchInputPressed = false;
+        IsSpacePressed = false;
     }
 
     public void ConsumePunchInput()
     {
         Debug.Log("Punch input consumed");
         IsPunchInputPressed = false;
+    }
+
+    public void ConsumeSpaceInput()
+    {
+        IsSpacePressed = false;
     }
 }

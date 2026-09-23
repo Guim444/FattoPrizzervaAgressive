@@ -32,6 +32,7 @@ public class PlayerController : MonoBehaviour
     [HideInInspector] public PlayerDepthScaler depthScaler;
     [HideInInspector] public PlayerStateMachineController stateMachineController;
     [HideInInspector] public CombatAttackHandler combatAttackHandler;
+    [HideInInspector] public PlayerWalkAlphaFade walkAlphaFade;
 
     public State currentState =>
         stateMachineController != null
@@ -77,6 +78,7 @@ public class PlayerController : MonoBehaviour
         depthScaler = GetComponent<PlayerDepthScaler>();
         stateMachineController = GetComponent<PlayerStateMachineController>();
         combatAttackHandler = GetComponent<CombatAttackHandler>();
+        walkAlphaFade = GetComponent<PlayerWalkAlphaFade>();
 
         combat.Initialize(this);
         stateMachineController.Initialize(this);
