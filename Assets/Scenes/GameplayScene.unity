@@ -2692,6 +2692,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 301409532}
     m_Modifications:
     - target: {fileID: 387300235227923260, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
+      propertyPath: m_CullingMask.m_Bits
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 387300235227923260, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
       propertyPath: m_BoundingSphereOverride.w
       value: 9.1897e-41
       objectReference: {fileID: 0}
