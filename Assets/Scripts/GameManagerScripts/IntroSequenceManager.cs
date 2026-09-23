@@ -1574,7 +1574,7 @@ public class IntroSequenceManager : MonoBehaviour
         SetPlayerAnimatorBoolIfAvailable(IdleFrontHash, false);
         RestoreGameplayAnimatorControl();
 
-        if (boundaryClamp != null) boundaryClamp.enabled = true;
+        if (boundaryClamp != null) boundaryClamp.enabled = false;
         if (playerInputHandler != null) playerInputHandler.enabled = true;
         if (playerController != null) playerController.enabled = true;
     }

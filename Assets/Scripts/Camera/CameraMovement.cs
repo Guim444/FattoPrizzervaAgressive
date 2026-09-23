@@ -103,7 +103,7 @@ public class CameraMovement : MonoBehaviour
             _yVel = 0f;
             _fovVel = 0f;
             zoomed = false;
-            enableZoom = false;
+            enableZoom = true;
             return;
         }
 

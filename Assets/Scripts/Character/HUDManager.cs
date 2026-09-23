@@ -191,6 +191,9 @@ public class HUDManager : MonoBehaviour
 
         if (ringManager != null) ringManager.enabled = false;
         if (playerBoundary != null) playerBoundary.enabled = false;
+        if (playableAreaManager != null) playableAreaManager.SetActive(true);
+        if (OutsideChurch != null) OutsideChurch.SetActive(true);
+        WindStateManager.UseChurchAlembicDistanceOnAll();
         HidePanel();
     }
 
