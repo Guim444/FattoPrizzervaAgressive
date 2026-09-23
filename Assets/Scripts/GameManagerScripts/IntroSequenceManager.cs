@@ -140,6 +140,9 @@ public class IntroSequenceManager : MonoBehaviour
     private Coroutine _churchSequenceCoroutine;
     private Coroutine _churchCameraTransitionCoroutine;
     private Coroutine _dialogueReturnCoroutine;
+    private Coroutine _playerMovingLightCoroutine;
+
+    public bool IsChurchSequenceRunning => _churchSequenceCoroutine != null;
     private CinemachineFramingTransposer _introFramingTransposer;
     private Vector3 _originalIntroTrackedObjectOffset;
     private CameraClearFlags _originalClearFlags;
@@ -1391,6 +1394,8 @@ public class IntroSequenceManager : MonoBehaviour
         string lightingSceneName,
         string dialogueSceneName)
     {
+        LightingStateManager.UnlockKeyboardTransitions();
+
         if (_dialogueReturnCoroutine != null)
             return false;
 
@@ -1425,7 +1430,9 @@ public class IntroSequenceManager : MonoBehaviour
 
         if (playerMovingLight != null)
         {
-            StartCoroutine(MovePlayerLightX());        
+            if (_playerMovingLightCoroutine != null)
+                StopCoroutine(_playerMovingLightCoroutine);
+            _playerMovingLightCoroutine = StartCoroutine(MovePlayerLightX());        
         }
     }
 
@@ -1441,6 +1448,7 @@ public class IntroSequenceManager : MonoBehaviour
             Vector3 pos = playerMovingLight.transform.localPosition;
             pos.x = playerMovingLightTargetX;
             playerMovingLight.transform.localPosition = pos;
+            _playerMovingLightCoroutine = null;
             yield break;
         }
 
@@ -1457,6 +1465,45 @@ public class IntroSequenceManager : MonoBehaviour
         Vector3 finalPos = playerMovingLight.transform.localPosition;
         finalPos.x = playerMovingLightTargetX;
         playerMovingLight.transform.localPosition = finalPos;
+        _playerMovingLightCoroutine = null;
+    }
+
+    /// <summary>
+    /// Sitúa de golpe la luz móvil en su posición final objetivo en X, cancelando cualquier desplazamiento en curso.
+    /// </summary>
+    public void SnapMovingLightToFinalPosition()
+    {
+        if (_playerMovingLightCoroutine != null)
+        {
+            StopCoroutine(_playerMovingLightCoroutine);
+            _playerMovingLightCoroutine = null;
+        }
+
+        if (playerMovingLight != null)
+        {
+            Vector3 pos = playerMovingLight.transform.localPosition;
+            pos.x = playerMovingLightTargetX;
+            playerMovingLight.transform.localPosition = pos;
+        }
+    }
+
+    /// <summary>
+    /// Sitúa de golpe todas las luces móviles en su posición final en todos los IntroSequenceManager de la escena,
+    /// a menos que la secuencia cinemática de la puerta esté ejecutándose en ese momento.
+    /// </summary>
+    public static void SnapAllMovingLightsToFinalPosition()
+    {
+        IntroSequenceManager[] managers = Object.FindObjectsByType<IntroSequenceManager>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        foreach (var manager in managers)
+        {
+            if (!manager.IsChurchSequenceRunning)
+            {
+                manager.SnapMovingLightToFinalPosition();
+            }
+        }
     }
 
     private IEnumerator DeactivatePlayerSorroundingLight()

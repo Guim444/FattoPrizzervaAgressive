@@ -34,6 +34,8 @@ public class EnvironmentStateManager : MonoBehaviour
 
     [Header("Test")]
     [SerializeField] private bool enableKeyboardShortcuts = true;
+    [Tooltip("Si está activo, las transiciones al pulsar los números 1-4 solo funcionarán tras interactuar con un botón de test (inicial o diálogo).")]
+    [SerializeField] private bool requireTestModeToEnableShortcuts = true;
 
     private AlembicTreeWindController[] _treeControllers;
     private Animator[] _treeAnimators;
@@ -94,6 +96,7 @@ public class EnvironmentStateManager : MonoBehaviour
         ApplyPerformanceToggles(false);
 
         if (!enableKeyboardShortcuts) return;
+        if (requireTestModeToEnableShortcuts && !LightingStateManager.KeyboardTransitionsUnlocked) return;
 
         if      (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1)) ApplyPhase(1);
         else if (Input.GetKeyDown(KeyCode.Alpha2) || Input.GetKeyDown(KeyCode.Keypad2)) ApplyPhase(2);

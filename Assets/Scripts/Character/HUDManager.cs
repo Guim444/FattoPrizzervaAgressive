@@ -232,6 +232,7 @@ public class HUDManager : MonoBehaviour
     {
         if (!CanUseModeSelection()) return;
 
+        LightingStateManager.UnlockKeyboardTransitions();
         PrepareDirectGameplayEntry();
         introSequenceManager?.RestoreOriginalAnimator();
         Time.timeScale = 1f;

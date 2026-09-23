@@ -32,6 +32,7 @@ public class DialogueSceneMenu : MonoBehaviour
         if (_isSwitchingScene) return;
 
         _isSwitchingScene = true;
+        LightingStateManager.UnlockKeyboardTransitions();
 
         IntroSequenceManager introSequenceManager =
             Object.FindFirstObjectByType<IntroSequenceManager>();

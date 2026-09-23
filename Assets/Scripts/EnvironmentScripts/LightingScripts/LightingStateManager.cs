@@ -134,6 +134,21 @@ public class LightingStateManager : MonoBehaviour
     [Header("Play Mode Test")]
     [SerializeField] private LightingState _previewState;
     [SerializeField] private bool enableKeyboardShortcuts = true;
+    [Tooltip("Si está activo, las transiciones al pulsar los números 1-4 solo funcionarán tras interactuar con un botón de test (inicial o diálogo).")]
+    [SerializeField] private bool requireTestModeToEnableShortcuts = true;
+
+    public static bool KeyboardTransitionsUnlocked { get; private set; } = false;
+
+    public static void UnlockKeyboardTransitions()
+    {
+        KeyboardTransitionsUnlocked = true;
+    }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetKeyboardTransitions()
+    {
+        KeyboardTransitionsUnlocked = false;
+    }
 
     private int _currentStateIndex = -1;
     private int _currentSkyIndex = -1;
@@ -292,18 +307,16 @@ public class LightingStateManager : MonoBehaviour
 
         foreach (var manager in managers)
         {
-            manager.EnterChurch();
+            manager.EnterChurch(skipDelay: false);
         }
     }
 
     /// <summary>
     /// Aplica todos los cambios de iluminación al entrar a la iglesia: activa el cielo, anima los Godrays, reduce la opacidad de MystifyEffect y aumenta la distancia de Distant Fog.
     /// </summary>
-    public void EnterChurch()
+    public void EnterChurch(bool skipDelay = false)
     {
-        if (skyHighlightEffect != null)
-            skyHighlightEffect.enabled = true;
-
+        ActivateSkyHighlight();
         EnsureMystifyEffectReference();
         EnsureDistantFogReference();
 
@@ -313,35 +326,163 @@ public class LightingStateManager : MonoBehaviour
         if (_godRaysCoroutine != null)
             StopCoroutine(_godRaysCoroutine);
 
-        _godRaysCoroutine = StartCoroutine(AnimateGodRaysRoutine());
+        _godRaysCoroutine = StartCoroutine(AnimateGodRaysRoutine(skipDelay));
 
         if (_mystifyCoroutine != null)
             StopCoroutine(_mystifyCoroutine);
 
-        _mystifyCoroutine = StartCoroutine(FadeMystifyRoutine());
+        _mystifyCoroutine = StartCoroutine(FadeMystifyRoutine(skipDelay));
 
         if (_distantFogCoroutine != null)
             StopCoroutine(_distantFogCoroutine);
 
-        _distantFogCoroutine = StartCoroutine(DistantFogRoutine());
+        _distantFogCoroutine = StartCoroutine(DistantFogRoutine(skipDelay));
 
-        TriggerTimedLights();
+        TriggerTimedLights(skipDelay);
+    }
+
+    /// <summary>
+    /// Activa la iluminación de la iglesia y asegura que los godrays se animen a su tamaño objetivo
+    /// (incluso si habían sido desactivados previamente por otra tecla o si la iglesia ya se había visitado).
+    /// </summary>
+    public void ActivateChurchLightingAndGodRays(bool skipDelay = true)
+    {
+        ActivateSkyHighlight();
+        EnsureMystifyEffectReference();
+        EnsureDistantFogReference();
+
+        // Animar Godrays si no están ya completamente activos a su escala final
+        if (!AreGodRaysActive() || _godRaysCoroutine != null)
+        {
+            if (_godRaysCoroutine != null)
+                StopCoroutine(_godRaysCoroutine);
+
+            _godRaysTriggered = true;
+            _godRaysCoroutine = StartCoroutine(AnimateGodRaysRoutine(skipDelay));
+        }
+
+        // Mystify effect fade
+        if (_mystifyCoroutine != null)
+            StopCoroutine(_mystifyCoroutine);
+        _mystifyCoroutine = StartCoroutine(FadeMystifyRoutine(skipDelay));
+
+        // Distant fog
+        if (_distantFogCoroutine != null)
+            StopCoroutine(_distantFogCoroutine);
+        _distantFogCoroutine = StartCoroutine(DistantFogRoutine(skipDelay));
+
+        // Timed lights
+        TriggerTimedLights(skipDelay);
+    }
+
+    /// <summary>
+    /// Activa la iluminación de la iglesia y los godrays en todos los LightingStateManager activos.
+    /// </summary>
+    public static void TriggerChurchLightingAndGodRays(bool skipDelay = true)
+    {
+        LightingStateManager[] managers = Object.FindObjectsByType<LightingStateManager>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        foreach (var manager in managers)
+        {
+            manager.ActivateChurchLightingAndGodRays(skipDelay);
+        }
+    }
+
+    /// <summary>
+    /// Activa el brillo del cielo mediante el componente HighlightEffect (Sky01).
+    /// </summary>
+    public void ActivateSkyHighlight()
+    {
+        EnsureSkyHighlightReference();
+        if (skyHighlightEffect != null)
+            skyHighlightEffect.enabled = true;
+    }
+
+    /// <summary>
+    /// Activa el brillo del cielo en todos los LightingStateManager activos.
+    /// </summary>
+    public static void ActivateAllSkyHighlights()
+    {
+        LightingStateManager[] managers = Object.FindObjectsByType<LightingStateManager>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        foreach (var manager in managers)
+        {
+            manager.ActivateSkyHighlight();
+        }
+    }
+
+    /// <summary>
+    /// Indica si alguno de los godrays está actualmente activo o en proceso de animación.
+    /// </summary>
+    public bool AreGodRaysActive()
+    {
+        return (_godRaysCoroutine != null)
+            || (godRay1 != null && godRay1.activeSelf)
+            || (godRay2 != null && godRay2.activeSelf);
+    }
+
+    /// <summary>
+    /// Desactiva de inmediato los Godrays y restablece su escala a cero.
+    /// </summary>
+    public void DeactivateGodRays()
+    {
+        if (_godRaysCoroutine != null)
+        {
+            StopCoroutine(_godRaysCoroutine);
+            _godRaysCoroutine = null;
+        }
+
+        if (godRay1 != null)
+        {
+            godRay1.transform.localScale = Vector3.zero;
+            godRay1.SetActive(false);
+        }
+
+        if (godRay2 != null)
+        {
+            godRay2.transform.localScale = Vector3.zero;
+            godRay2.SetActive(false);
+        }
+
+        _godRaysTriggered = false;
+    }
+
+    /// <summary>
+    /// Desactiva los Godrays en todos los LightingStateManager activos si están activados.
+    /// </summary>
+    public static void DeactivateAllGodRaysIfActive()
+    {
+        LightingStateManager[] managers = Object.FindObjectsByType<LightingStateManager>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        foreach (var manager in managers)
+        {
+            if (manager.AreGodRaysActive())
+                manager.DeactivateGodRays();
+        }
     }
 
     /// <summary>
     /// Inicia la secuencia de activación y aumento de intensidad en intervalos para las dos luces temporizadas.
     /// </summary>
-    public void TriggerTimedLights()
+    public void TriggerTimedLights(bool skipDelay = false)
     {
         if (_timedLight1Coroutine != null)
             StopCoroutine(_timedLight1Coroutine);
 
-        _timedLight1Coroutine = StartCoroutine(AnimateTimedLightRoutine(timedLight1, timedLight1Delay, timedLight1TargetIntensity));
+        float delay1 = skipDelay ? 0f : timedLight1Delay;
+        _timedLight1Coroutine = StartCoroutine(AnimateTimedLightRoutine(timedLight1, delay1, timedLight1TargetIntensity));
 
         if (_timedLight2Coroutine != null)
             StopCoroutine(_timedLight2Coroutine);
 
-        _timedLight2Coroutine = StartCoroutine(AnimateTimedLightRoutine(timedLight2, timedLight2Delay, timedLight2TargetIntensity));
+        float delay2 = skipDelay ? 0f : timedLight2Delay;
+        _timedLight2Coroutine = StartCoroutine(AnimateTimedLightRoutine(timedLight2, delay2, timedLight2TargetIntensity));
     }
 
     /// <summary>
@@ -391,7 +532,8 @@ public class LightingStateManager : MonoBehaviour
         if (targetLight == null)
             yield break;
 
-        ApplyLightIntensity(targetLight, timedLightsStartIntensity);
+        if (!targetLight.gameObject.activeSelf || delay > 0f)
+            ApplyLightIntensity(targetLight, timedLightsStartIntensity);
 
         if (delay > 0f)
             yield return new WaitForSeconds(delay);
@@ -401,7 +543,7 @@ public class LightingStateManager : MonoBehaviour
 
         float duration = Mathf.Max(0.001f, timedLightsTransitionDuration);
         float elapsed = 0f;
-        float startIntensity = timedLightsStartIntensity;
+        float startIntensity = targetLight.intensity;
 
         while (elapsed < duration)
         {
@@ -416,7 +558,7 @@ public class LightingStateManager : MonoBehaviour
         ApplyLightIntensity(targetLight, targetIntensity);
     }
 
-    private IEnumerator DistantFogRoutine()
+    private IEnumerator DistantFogRoutine(bool skipDelay = false)
     {
         EnsureDistantFogReference();
         if (distantFog == null)
@@ -452,7 +594,7 @@ public class LightingStateManager : MonoBehaviour
         distantFog.UpdateMaterialPropertiesNow();
 
         // Delay opcional antes de aumentar hacia fogEndDistance
-        if (fogIncreaseDelay > 0f)
+        if (!skipDelay && fogIncreaseDelay > 0f)
             yield return new WaitForSeconds(fogIncreaseDelay);
 
         // Fase 2: Transicionar desde fogStartDistance hasta fogEndDistance
@@ -481,7 +623,7 @@ public class LightingStateManager : MonoBehaviour
         _distantFogCoroutine = null;
     }
 
-    private IEnumerator FadeMystifyRoutine()
+    private IEnumerator FadeMystifyRoutine(bool skipDelay = false)
     {
         EnsureMystifyEffectReference();
         if (churchMystifyEffect == null)
@@ -491,7 +633,7 @@ public class LightingStateManager : MonoBehaviour
         if (profile == null)
             yield break;
 
-        if (mystifyFadeDelay > 0f)
+        if (!skipDelay && mystifyFadeDelay > 0f)
             yield return new WaitForSeconds(mystifyFadeDelay);
 
         float duration = Mathf.Max(0.001f, mystifyFadeDuration);
@@ -524,7 +666,7 @@ public class LightingStateManager : MonoBehaviour
         _mystifyCoroutine = null;
     }
 
-    private IEnumerator AnimateGodRaysRoutine()
+    private IEnumerator AnimateGodRaysRoutine(bool skipDelay = false)
     {
         if (godRay1 != null)
         {
@@ -538,7 +680,7 @@ public class LightingStateManager : MonoBehaviour
             godRay2.SetActive(true);
         }
 
-        if (godRaysDelay > 0f)
+        if (!skipDelay && godRaysDelay > 0f)
             yield return new WaitForSeconds(godRaysDelay);
 
         if (godRay1 != null && !godRay1.activeSelf)
@@ -576,11 +718,42 @@ public class LightingStateManager : MonoBehaviour
     private void Update()
     {
         if (!enableKeyboardShortcuts) return;
+        if (requireTestModeToEnableShortcuts && !KeyboardTransitionsUnlocked) return;
 
-        if      (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1)) ApplyPhase(1);
-        else if (Input.GetKeyDown(KeyCode.Alpha2) || Input.GetKeyDown(KeyCode.Keypad2)) ApplyPhase(2);
-        else if (Input.GetKeyDown(KeyCode.Alpha3) || Input.GetKeyDown(KeyCode.Keypad3)) ApplyPhase(3);
-        else if (Input.GetKeyDown(KeyCode.Alpha4) || Input.GetKeyDown(KeyCode.Keypad4)) ApplyPhase(4);
+        if      (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1)) ApplyNumberTransition(1);
+        else if (Input.GetKeyDown(KeyCode.Alpha2) || Input.GetKeyDown(KeyCode.Keypad2)) ApplyNumberTransition(2);
+        else if (Input.GetKeyDown(KeyCode.Alpha3) || Input.GetKeyDown(KeyCode.Keypad3)) ApplyNumberTransition(3);
+        else if (Input.GetKeyDown(KeyCode.Alpha4) || Input.GetKeyDown(KeyCode.Keypad4)) ApplyNumberTransition(4);
+    }
+
+    /// <summary>
+    /// Ejecuta la transición correspondiente al pulsar los números del teclado (1-4):
+    /// - Todos los números: activan el brillo del cielo (HighlightEffect) y sitúan la luz móvil de golpe en su punto final.
+    /// - Tecla 3: vincula todo lo que ocurre al entrar en la iglesia (iluminación y godrays).
+    /// - Teclas 1, 2 y 4: desactivan los godrays si están activados.
+    /// </summary>
+    public void ApplyNumberTransition(int phase)
+    {
+        // 1. Activar el brillo del cielo del componente highlight (todos los números)
+        ActivateAllSkyHighlights();
+
+        // 2. Reposicionar la luz que se mueve en X de golpe en su punto final (todos los números)
+        IntroSequenceManager.SnapAllMovingLightsToFinalPosition();
+
+        // 3. Vincular iluminación/godrays de la iglesia o desactivar godrays:
+        if (phase == 3)
+        {
+            // El número 3 vincula todo lo que ocurre al entrar en la iglesia (iluminación y godrays)
+            TriggerChurchLightingAndGodRays(skipDelay: true);
+        }
+        else
+        {
+            // El resto de números desactivan los godrays si están activados
+            DeactivateAllGodRaysIfActive();
+        }
+
+        // 4. Transición de iluminación de la fase correspondiente
+        ApplyPhase(phase);
     }
 
     public void ApplyPhase(int phase)
