@@ -10948,8 +10948,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09d252e0fe3e0554aae3ece2bbbbde15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minAlpha: 0.195
-  fadeDownDuration: 0.2
+  minAlpha: 0.18
+  fadeDownDuration: 0.1
   holdDuration: 0.1
   fadeUpDuration: 0.3
 --- !u!1 &2021292068

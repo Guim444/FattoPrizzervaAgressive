@@ -82,9 +82,6 @@ public class PlayerWalkAlphaFade : MonoBehaviour
 
     public bool IsEligibleForFade()
     {
-        if (_player != null && _player.currentState != State.Moving)
-            return false;
-
         if (_spriteRenderer == null || !_spriteRenderer.enabled || _spriteRenderer.sharedMaterial == null)
             return false;
 
