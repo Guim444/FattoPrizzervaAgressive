@@ -1,4 +1,5 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -8,6 +9,8 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public sealed class BuildSceneLoader : MonoBehaviour
 {
+    [SerializeField] private TMP_Text loadingText;
+
     [SerializeField] private string[] additiveScenePaths =
     {
         "Assets/Scenes/GameplayScene.unity",
@@ -17,8 +20,18 @@ public sealed class BuildSceneLoader : MonoBehaviour
 
     [SerializeField] private string activeSceneName = "GameplayScene";
 
+    private static readonly string[] LoadingStates = { "Loading", "Loading.", "Loading..", "Loading..." };
+
     private IEnumerator Start()
     {
+        Coroutine animationCoroutine = null;
+
+        if (loadingText != null)
+        {
+            loadingText.gameObject.SetActive(true);
+            animationCoroutine = StartCoroutine(AnimateLoadingText());
+        }
+
         foreach (string scenePath in additiveScenePaths)
         {
             if (string.IsNullOrWhiteSpace(scenePath))
@@ -52,5 +65,27 @@ public sealed class BuildSceneLoader : MonoBehaviour
             SceneManager.SetActiveScene(activeScene);
         else
             Debug.LogError($"[{nameof(BuildSceneLoader)}] No se encontró la escena activa '{activeSceneName}'.", this);
+
+        if (animationCoroutine != null)
+            StopCoroutine(animationCoroutine);
+
+        if (loadingText != null)
+            loadingText.gameObject.SetActive(false);
+    }
+
+    private IEnumerator AnimateLoadingText()
+    {
+        int index = 0;
+
+        while (true)
+        {
+            if (loadingText != null)
+            {
+                loadingText.text = LoadingStates[index];
+                index = (index + 1) % LoadingStates.Length;
+            }
+
+            yield return new WaitForSecondsRealtime(0.1f);
+        }
     }
 }
