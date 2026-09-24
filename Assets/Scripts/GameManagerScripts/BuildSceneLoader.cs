@@ -12,13 +12,13 @@ public sealed class BuildSceneLoader : MonoBehaviour
     [SerializeField] private TMP_Text loadingText;
 
     [SerializeField] private string[] additiveScenePaths =
-    {
-        "Assets/Scenes/GameplayScene.unity",
+    {       
         "Assets/Scenes/LightingScene.unity",
-        "Assets/Scenes/DialogueScene.unity"
+        "Assets/Scenes/DialogueScene.unity",
+        "Assets/Scenes/GameplayScene.unity",
     };
 
-    [SerializeField] private string activeSceneName = "GameplayScene";
+    [SerializeField] private string activeSceneName = "MainScene";
 
     private static readonly string[] LoadingStates = { "Loading", "Loading.", "Loading..", "Loading..." };
 
@@ -85,7 +85,7 @@ public sealed class BuildSceneLoader : MonoBehaviour
                 index = (index + 1) % LoadingStates.Length;
             }
 
-            yield return new WaitForSecondsRealtime(0.1f);
+            yield return new WaitForSecondsRealtime(0.05f);
         }
     }
 }

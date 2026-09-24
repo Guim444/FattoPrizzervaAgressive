@@ -212,13 +212,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   loadingText: {fileID: 731461555}
-  dotInterval: 0.25
   additiveScenePaths:
   - Assets/Scenes/GameplayScene.unity
   - Assets/Scenes/LightingScene.unity
   - Assets/Scenes/DialogueScene.unity
   activeSceneName: MainScene
-  loadingPriority: 2
 --- !u!1 &582281011
 GameObject:
   m_ObjectHideFlags: 0
@@ -378,7 +376,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Loading
+  m_text: Loading...
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -387,8 +385,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4291142165
-  m_fontColor: {r: 0.08392668, g: 0.6352494, b: 0.7735849, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
