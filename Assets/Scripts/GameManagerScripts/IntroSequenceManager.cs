@@ -30,6 +30,7 @@ public class IntroSequenceManager : MonoBehaviour
     [SerializeField] private PlayerController playerController;
     [SerializeField] private HUDManager hudManager;
     [SerializeField] private SpriteRenderer playerSpriteRenderer;
+    [SerializeField] private GameObject testControlsPanel;
     [SerializeField] private Light playerSorroundLight;
     [Tooltip("Duración del apagado progresivo de la luz del jugador.")]
     [SerializeField, Min(0f)] private float playerSurroundLightFadeDuration = 2f;
@@ -1395,6 +1396,9 @@ public class IntroSequenceManager : MonoBehaviour
         string dialogueSceneName)
     {
         LightingStateManager.UnlockKeyboardTransitions();
+
+        if(testControlsPanel != null)
+            testControlsPanel.SetActive(true); 
 
         if (_dialogueReturnCoroutine != null)
             return false;
