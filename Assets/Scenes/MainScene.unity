@@ -167,6 +167,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   reloadKey: 114
+  reloadWithInput: 0
 --- !u!1 &323819015
 GameObject:
   m_ObjectHideFlags: 0

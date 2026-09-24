@@ -6,10 +6,12 @@ public class ReloadScenes : MonoBehaviour
     [SerializeField] private KeyCode reloadKey = KeyCode.R;
 
     private bool reloading;
+    [SerializeField]
+    private bool reloadWithInput = true;
 
     private void Update()
     {
-        if (Input.GetKeyDown(reloadKey) && !reloading)
+        if (reloadWithInput && Input.GetKeyDown(reloadKey) && !reloading)
         {
             Reload();
         }
