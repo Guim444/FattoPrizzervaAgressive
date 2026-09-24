@@ -4,6 +4,7 @@ using UnityEngine.SceneManagement;
 public class ReloadScenes : MonoBehaviour
 {
     [SerializeField] private KeyCode reloadKey = KeyCode.R;
+    [SerializeField] private KeyCode QuitKey = KeyCode.Escape;
 
     private bool reloading;
     [SerializeField]
@@ -11,10 +12,16 @@ public class ReloadScenes : MonoBehaviour
 
     private void Update()
     {
+        if(Input.GetKeyDown(QuitKey))
+        {
+            Application.Quit();
+            return;
+        }
+
         if (reloadWithInput && Input.GetKeyDown(reloadKey) && !reloading)
         {
             Reload();
-        }
+        } 
     }
 
     public void Reload()

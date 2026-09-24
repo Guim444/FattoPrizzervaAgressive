@@ -18,6 +18,9 @@ public class IntroSequenceManager : MonoBehaviour
     private static readonly int Phase1FullHash = Animator.StringToHash("Base Layer.Phase 1");
     private static readonly int Phase2ShortHash = Animator.StringToHash("Phase 2");
     private static readonly int Phase2FullHash = Animator.StringToHash("Base Layer.Phase 2");
+    private static readonly int RioTutteLoopParamHash = Animator.StringToHash("Loop");
+    private static readonly int RioTutteNoLoopStateHash = Animator.StringToHash("Base Layer.Riotutte_IddleHalfBody");
+    private static readonly int RioTutteLoopStateHash = Animator.StringToHash("Base Layer.Riotutte_IddleHalfBody_Loop");
 
     [Header("References")]
     [SerializeField] private Camera mainCamera;
@@ -125,6 +128,10 @@ public class IntroSequenceManager : MonoBehaviour
     [SerializeField]
     private float timeDelayRiotutteAnim = 3.0f;
 
+    [Header("RioTutte Visuals")]
+    [SerializeField] private Transform rioTutteStandard;
+    [SerializeField] private Transform rioTutteTransformation;
+
     [Header("Blink — Form Lock")]
     [SerializeField] private bool lockHumanForm = false;
 
@@ -204,6 +211,8 @@ public class IntroSequenceManager : MonoBehaviour
             _originalClearFlags = mainCamera.clearFlags;
 
         CacheIntroCameraFraming();
+        GetRioTutteStandard();
+        PrepareRioTutteForIntro();
     }
 
     private void LateUpdate()
@@ -218,6 +227,7 @@ public class IntroSequenceManager : MonoBehaviour
     public void ShowBlackScreen()
     {
         PauseGameplayAnimatorControl();
+        PrepareRioTutteForIntro();
 
         if (sceneFadeScreen != null)
             sceneFadeScreen.SetAlphaInstantly(1f);
@@ -1169,10 +1179,12 @@ public class IntroSequenceManager : MonoBehaviour
         if (_churchSequenceCoroutine != null)
             return false;
 
-        if (firstTarget == null || secondTarget == null ||
-            rioTutteStandard == null || rioTutteTransformation == null)
+        this.rioTutteStandard = rioTutteStandard;
+        this.rioTutteTransformation = rioTutteTransformation;
+
+        if (firstTarget == null || secondTarget == null || rioTutteStandard == null)
         {
-            Debug.LogError($"[{nameof(IntroSequenceManager)}] Asigna los dos puntos de automove y las dos variantes visuales de RioTutte.", this);
+            Debug.LogError($"[{nameof(IntroSequenceManager)}] Asigna los dos puntos de automove y RioTutte Standard.", this);
             return false;
         }
 
@@ -1307,11 +1319,25 @@ public class IntroSequenceManager : MonoBehaviour
         _churchCameraTransitionCoroutine = null;
     }
 
-    private IEnumerator AnimateRiotutteStandard(Transform rioTutteStandard)
+    private IEnumerator AnimateRiotutteStandard(Transform rioTutteStandardTransform)
     {
         yield return new WaitForSeconds(timeDelayRiotutteAnim);
 
-        rioTutteStandard.GetComponent<Animator>().enabled = true;
+        Transform target = GetRioTutteStandard(rioTutteStandardTransform);
+        if (target != null)
+        {
+            target.gameObject.SetActive(true);
+            if (rioTutteTransformation != null)
+                rioTutteTransformation.gameObject.SetActive(false);
+
+            Animator animator = target.GetComponent<Animator>();
+            if (animator != null)
+            {
+                animator.enabled = true;
+                animator.SetBool(RioTutteLoopParamHash, false);
+                animator.Play(RioTutteNoLoopStateHash, 0, 0f);
+            }
+        }
     }
 
 
@@ -1583,12 +1609,88 @@ public class IntroSequenceManager : MonoBehaviour
         if (playerController != null) playerController.enabled = true;
     }
 
+    public Transform GetRioTutteStandard(Transform fallback = null)
+    {
+        if (fallback != null)
+        {
+            rioTutteStandard = fallback;
+            return rioTutteStandard;
+        }
+
+        if (rioTutteStandard != null)
+            return rioTutteStandard;
+
+        ChurchDoorTrigger doorTrigger = Object.FindAnyObjectByType<ChurchDoorTrigger>(FindObjectsInactive.Include);
+        if (doorTrigger != null && doorTrigger.RioTutteStandard != null)
+        {
+            rioTutteStandard = doorTrigger.RioTutteStandard;
+            if (rioTutteTransformation == null)
+                rioTutteTransformation = doorTrigger.RioTutteTransformation;
+            return rioTutteStandard;
+        }
+
+        GameObject found = GameObject.Find("Riotutte_Standart");
+        if (found != null)
+        {
+            rioTutteStandard = found.transform;
+            return rioTutteStandard;
+        }
+
+        return null;
+    }
+
+    public void PrepareRioTutteForIntro()
+    {
+        Transform target = GetRioTutteStandard();
+        if (target == null) return;
+
+        target.gameObject.SetActive(true);
+        if (rioTutteTransformation != null)
+            rioTutteTransformation.gameObject.SetActive(false);
+
+        Animator animator = target.GetComponent<Animator>();
+        if (animator != null)
+        {
+            animator.SetBool(RioTutteLoopParamHash, false);
+            animator.enabled = false;
+        }
+    }
+
+    public void SetRioTutteStandardLoop(bool loop, Transform targetTransform = null)
+    {
+        Transform target = GetRioTutteStandard(targetTransform);
+        if (target == null) return;
+
+        target.gameObject.SetActive(true);
+        if (rioTutteTransformation != null)
+            rioTutteTransformation.gameObject.SetActive(false);
+
+        Animator animator = target.GetComponent<Animator>();
+        if (animator == null) return;
+
+        animator.enabled = true;
+        animator.SetBool(RioTutteLoopParamHash, loop);
+
+        if (loop)
+        {
+            AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+            bool isAlreadyInLoopState = stateInfo.shortNameHash == Animator.StringToHash("Riotutte_IddleHalfBody_Loop");
+            if (!isAlreadyInLoopState)
+            {
+                float startTime = stateInfo.normalizedTime >= 1f ? 0f : (stateInfo.normalizedTime % 1f);
+                animator.Play(RioTutteLoopStateHash, 0, startTime);
+            }
+        }
+    }
+
     private void ShowRioTutteTransformation(
         Transform rioTutteStandard,
         Transform rioTutteTransformation)
     {
-        rioTutteStandard.gameObject.SetActive(false);
-        rioTutteTransformation.gameObject.SetActive(true);
+        if (rioTutteStandard != null)
+            rioTutteStandard.gameObject.SetActive(false);
+        if (rioTutteTransformation != null)
+            rioTutteTransformation.gameObject.SetActive(true);
     }
 
     private IEnumerator LowerCameraDuringAutoMove(float targetWorldY, float duration)

@@ -14,6 +14,9 @@ public class ChurchDoorTrigger : MonoBehaviour
     [SerializeField] private Transform rioTutteStandard;
     [SerializeField] private Transform rioTutteTransformation;
 
+    public Transform RioTutteStandard => rioTutteStandard;
+    public Transform RioTutteTransformation => rioTutteTransformation;
+
     [Header("Camera")]
     [Tooltip("Altura temporal de cámara durante los automoves.")]
     [SerializeField] private float autoMoveCameraY = 3f;
