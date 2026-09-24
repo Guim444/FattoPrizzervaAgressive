@@ -20,7 +20,7 @@ public sealed class BuildSceneLoader : MonoBehaviour
 
     [SerializeField] private string activeSceneName = "MainScene";
 
-    private static readonly string[] LoadingStates = { "Loading", "Loading.", "Loading..", "Loading..." };
+    private static readonly string[] LoadingStates = { "Loading..", "Loading...", "Loading", "Loading." };
 
     private IEnumerator Start()
     {

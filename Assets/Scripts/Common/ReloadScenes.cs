@@ -11,14 +11,20 @@ public class ReloadScenes : MonoBehaviour
     {
         if (Input.GetKeyDown(reloadKey) && !reloading)
         {
-            reloading = true;
-
-            int buildIndex = gameObject.scene.buildIndex;
-            if (buildIndex >= 0)
-                SceneManager.LoadScene(buildIndex, LoadSceneMode.Single);
-            else
-                SceneManager.LoadScene(gameObject.scene.name, LoadSceneMode.Single);
+            Reload();
         }
     }
-}
 
+    public void Reload()
+    {
+        if (reloading) return;
+        reloading = true;
+        Time.timeScale = 1f;
+
+        int buildIndex = gameObject.scene.buildIndex;
+        if (buildIndex >= 0)
+            SceneManager.LoadScene(buildIndex, LoadSceneMode.Single);
+        else
+            SceneManager.LoadScene(gameObject.scene.name, LoadSceneMode.Single);
+    }
+}
