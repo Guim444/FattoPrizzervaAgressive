@@ -1642,17 +1642,14 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1375970196312274560, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2004004973}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
 --- !u!114 &448675060 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1993278659528858592, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
   m_PrefabInstance: {fileID: 448675059}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1891044029}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f0d275ec5f2881b4b9c9d79b3c5d486d, type: 3}
@@ -6395,11 +6392,6 @@ Transform:
   - {fileID: 495629298}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1891044029 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1375970196312274560, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
-  m_PrefabInstance: {fileID: 448675059}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1972989678
 GameObject:
   m_ObjectHideFlags: 0
@@ -6712,22 +6704,10 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3136478325201886202, guid: ae09293554b5d6f4ab3e867b2e6123d8, type: 3}
   m_PrefabInstance: {fileID: 448675059}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1891044029}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b289feb47bea5cc42a384fbafb821cbe, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &2004004973
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1891044029}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 09d252e0fe3e0554aae3ece2bbbbde15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &2021292068

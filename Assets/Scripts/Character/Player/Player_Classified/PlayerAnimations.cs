@@ -125,7 +125,7 @@ public class PlayerAnimations : MonoBehaviour
 
         if (state == State.Moving || state == State.Running || state == State.Idle)
             player.movement.EnforceInvertedSpriteFlip();
-        else if (state == State.PunchRunning)
+        else if (state == State.PunchRunning || state == State.Punching)
             player.movement.RefreshSpriteFlip();
     }
 

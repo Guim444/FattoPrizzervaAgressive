@@ -24,7 +24,12 @@ public class PunchingState : IStateActions
         if (punchExecuted) return;
         punchExecuted = true;
 
-        player.movement.RefreshSpriteFlip();
+        var movement = player.movement;
+        Vector3 input = movement.GetDirectionalInput();
+        if (input.magnitude > 0.1f)
+            movement.ApplyInertia(input, Time.deltaTime, movement.walkingTurnSpeed);
+
+        movement.RefreshSpriteFlip();
         player.combatAttackHandler.PrepareAttack(AttackType.Punch);
         player.animator.SetTrigger("isPunching");
 
@@ -44,6 +49,7 @@ public class PunchingState : IStateActions
         {
             stamina.SetWalking();
             Vector3 input = movement.GetDirectionalInput();
+            movement.ApplyInertia(input, Time.deltaTime, movement.walkingTurnSpeed);
             if (controller.enabled)
                 controller.Move(input * movement.punchingSpeed * Time.deltaTime);
         }
