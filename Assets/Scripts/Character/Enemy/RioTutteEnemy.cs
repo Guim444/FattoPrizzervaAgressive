@@ -229,25 +229,10 @@ public class RioTutteEnemy : EnemyBase, IPhaseChangeHandler
 
             case 2:
                 // Very strong knockbacks can knock RioTutte down in phase 2
-                if (dmg >= 30) TriggerFall();
+                // If you want to knock with damage, choose the correct value (Comment by David)
+                if (_player.currentState == State.PunchRunning) TriggerFall();
                 break;
         }
-
-        Vector3 dir = _player.transform.position - transform.position;
-        dir.y = 0f;
-
-        if (dir.magnitude < MinSeparation)
-        {
-            IsMoving = false;
-            return;
-        }
-
-        dir.Normalize();
-        _lastMoveDirection = dir;
-        FlipCharacter(dir);
-
-        if (_cc.enabled) _cc.Move(dir * walkSpeed * Time.deltaTime);
-        IsMoving = true;
     }
 
     public override void ReceiveKnockback(Vector3 direction, float force)
@@ -283,6 +268,7 @@ public class RioTutteEnemy : EnemyBase, IPhaseChangeHandler
     {
         CurrentPhase++;
         Debug.Log($"[RioTutte] Phase → {CurrentPhase}");
+        CombatDebugHUD.ReportPhase("RioTutte", CurrentPhase);
 
         switch (CurrentPhase)
         {
@@ -322,6 +308,7 @@ public class RioTutteEnemy : EnemyBase, IPhaseChangeHandler
 
         Vector3 dir = toPlayer.magnitude > 0.01f ? toPlayer.normalized : transform.forward;
         _player.knockbackHandler.ReceiveEnemyKnockback(dir, attackKnockbackBase);
+        CombatDebugHUD.ReportHit("RioTutte", "Jugador", "SimplePunch", attackKnockbackBase, 0);
         _anim.SetTrigger("Punch");
         ResetAttackCooldown();
     }

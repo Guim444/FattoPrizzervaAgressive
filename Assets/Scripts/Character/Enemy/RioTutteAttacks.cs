@@ -208,6 +208,8 @@ public class RioTutteAttacks : MonoBehaviour, IAttacker
             );
             _player.combat.TakeDamage(1);
 
+            CombatDebugHUD.ReportHit("RioTutte", "Jugador", "GrabPunch", _enemy.attackKnockbackBase * 2f, 1);
+
             if (_player.combat.HP > 0)
                 _player.canMove = true;
         }

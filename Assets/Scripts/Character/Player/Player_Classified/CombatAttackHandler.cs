@@ -117,6 +117,8 @@ public class CombatAttackHandler : MonoBehaviour
 
         Debug.Log($"[Attack] {attackType} | playerEnd:{_player.combat.EffectiveEndurance} " +
                   $"forceEnemy:{result.ForceOnTarget:F1} forceSelf:{result.ForceOnSelf:F1}");
+
+        CombatDebugHUD.ReportHit("Jugador", closest.name, attackType.ToString(), result.ForceOnTarget, (int)damage);
     }
 
     // CombatAttackHandler.cs — full GetClosest method

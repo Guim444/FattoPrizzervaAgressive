@@ -85,6 +85,8 @@ public class ClashHandler : MonoBehaviour
         if (result.ForceOnSelf > 0.01f)
             player.knockbackHandler.ReceiveKnockback(-clashDir, result.ForceOnSelf);
 
+        CombatDebugHUD.ReportHit("Jugador (Choque)", enemy.name, "Clash", result.ForceOnTarget, 0);
+
         _cooldownTimer = clashCooldown;
     }
 }
