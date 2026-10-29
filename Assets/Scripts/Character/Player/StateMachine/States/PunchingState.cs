@@ -24,7 +24,7 @@ public class PunchingState : IStateActions
         if (punchExecuted) return;
         punchExecuted = true;
 
-        player.movement.RefreshSpriteFlip();
+        player.movement.ApplyPunchFlip();
         player.combatAttackHandler.PrepareAttack(AttackType.Punch);
         player.animator.SetTrigger("isPunching");
 
@@ -36,7 +36,7 @@ public class PunchingState : IStateActions
     public void Update()
     {
         var movement = player.movement;
-        movement.RefreshSpriteFlip();
+        movement.ApplyPunchFlip();
 
         bool isMoving = movement.GetDirectionalInput().magnitude > 0.1f;
 

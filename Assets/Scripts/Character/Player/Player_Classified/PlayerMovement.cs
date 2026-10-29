@@ -49,6 +49,18 @@ public class PlayerMovement : MonoBehaviour
     public Vector3 LastDirection { get; set; } = Vector3.zero;
     public Vector3 LastFacingDirection { get; private set; } = Vector3.forward;
 
+    // Lado de la pantalla al que mira el jugador, sale del ultimo input en Z (nunca es 0)
+    public float FacingZSign { get; private set; } = 1f;
+
+    // Marcar si la animacion de golpe sale girada hacia el lado contrario
+    [SerializeField] private bool invertPunchFlip;
+
+    // Gira el sprite del golpe segun el lado al que mira el jugador
+    public void ApplyPunchFlip()
+    {
+        ApplyVisualFlip(FacingZSign, invertPunchFlip);
+    }
+
     private float _verticalVelocity = 0f;
     private CharacterController _cc;
     private PlayerInputHandler _input;
@@ -91,6 +103,8 @@ public class PlayerMovement : MonoBehaviour
         if (inputDir.magnitude > 0.1f)
         {
             LastFacingDirection = inputDir.normalized;
+            if (Mathf.Abs(inputDir.z) > 0.1f)
+                FacingZSign = Mathf.Sign(inputDir.z);
             ApplyCurrentStateSpriteFlip();
         }
 

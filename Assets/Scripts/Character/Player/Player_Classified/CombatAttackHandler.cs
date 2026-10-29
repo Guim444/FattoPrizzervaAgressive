@@ -24,6 +24,18 @@ public class CombatAttackHandler : MonoBehaviour
     public float edgeThresholdRatio = 0.6f; // hits above this ratio = edge (½ damage)
     public LayerMask enemyLayer;
 
+    [Header("Game Design: Punch Box")]
+    // Ancho de la caja en profundidad, mas grande es mas facil acertar
+    public float punchBoxDepth = 2.5f;
+
+    public float punchBoxHeight = 2f;
+
+    // Altura del centro de la caja sobre el jugador
+    public float punchBoxCenterHeight = 1f;
+
+    // Cuanto influye el movimiento del jugador en la direccion del empuje
+    [Range(0f, 1f)] public float inertiaInfluence = 0.5f;
+
     [Header("Game Design: Damage Values")]
     public float basicPunchDamage = 1f;
 
@@ -34,6 +46,11 @@ public class CombatAttackHandler : MonoBehaviour
     [Tooltip("Additional knockback multiplier when attacking (vs colliding).\n" +
              "Example: if ClashHandler gives 8, attacking gives 8 * attackKnockbackMultiplier")]
     public float attackKnockbackMultiplier = 1.5f;
+
+    // Ultima caja de puñetazo, solo para el modo debug
+    public static Vector3 DebugBoxCenter;
+    public static Vector3 DebugBoxHalf;
+    public static float DebugBoxTime = -100f;
 
     private PlayerController _player;
     private AttackType _preparedAttackType;
@@ -70,29 +87,39 @@ public class CombatAttackHandler : MonoBehaviour
         if (!_player.canAttack) return;
         _player.canAttack = false;
 
-        Vector3 direction = GetAttackDirection();
+        // Pega hacia el lado al que mira, nunca hacia la profundidad
+        Vector3 facing = new Vector3(0f, 0f, _player.movement.FacingZSign);
+        Vector3 inertia = _player.movement.LastDirection;
 
-        // Sphere projected forward: origin is offset half the radius
-        // in the attack direction, so effective range = radius * 1.5 instead of radius.
-        float radius = attackType == AttackType.PunchRunning ? punchRangeRunning : punchRange;
-        Vector3 origin = transform.position + Vector3.up * 0.5f + direction * (radius * 0.5f);
+        float reach = attackType == AttackType.PunchRunning ? punchRangeRunning : punchRange;
+        Vector3 halfExtents = new Vector3(punchBoxDepth * 0.5f, punchBoxHeight * 0.5f, reach * 0.5f);
+        Vector3 center = transform.position + Vector3.up * punchBoxCenterHeight + facing * (reach * 0.5f);
 
-        Debug.DrawLine(transform.position + Vector3.up * 0.5f, origin + direction * radius, Color.red, 0.5f);
+        DrawDebugBox(center, halfExtents, Color.red, 0.5f);
+
+        // Se guarda para poder verla en el modo debug del panel
+        DebugBoxCenter = center;
+        DebugBoxHalf = halfExtents;
+        DebugBoxTime = Time.time;
 
         LayerMask mask = enemyLayer.value == 0 ? ~0 : enemyLayer;
-        Collider[] all = Physics.OverlapSphere(origin, radius, mask);
+        Collider[] all = Physics.OverlapBox(center, halfExtents, Quaternion.identity, mask);
 
-        // Only colliders from other GameObjects that are in the attack direction
+        // Ignoramos los colliders del propio jugador
         Collider[] hits = System.Array.FindAll(all, c =>
-            c.gameObject != gameObject &&
-            Vector3.Dot((c.transform.position - transform.position).normalized, direction) > 0.3f
+            c.gameObject != gameObject && !c.transform.IsChildOf(transform)
         );
 
         if (hits.Length == 0)
         {
-            Debug.Log($"[Attack] No hit — origin:{origin} radius:{radius} dir:{direction}");
+            Debug.Log($"[Attack] No hit — box center:{center} half:{halfExtents} facing:{facing}");
             return;
         }
+
+        // El empuje va hacia donde mira, mezclado con el movimiento que llevaba el jugador
+        Vector3 direction = facing + new Vector3(inertia.x, 0f, inertia.z) * inertiaInfluence;
+        direction.y = 0f;
+        direction = direction.sqrMagnitude > 0.0001f ? direction.normalized : facing;
 
         Collider closest = GetClosest(hits);
         float damage = CalculateDamage(attackType, true);
@@ -137,12 +164,20 @@ public class CombatAttackHandler : MonoBehaviour
 
         return closest;
     }
-    private Vector3 GetAttackDirection()
+    private static void DrawDebugBox(Vector3 center, Vector3 half, Color color, float duration)
     {
-        Vector3 last = _player.movement.LastDirection;
-        if (last.magnitude > 0.1f) return last.normalized;
+        Vector3 min = center - half;
+        Vector3 max = center + half;
+        Vector3 a = new Vector3(min.x, min.y, min.z), b = new Vector3(max.x, min.y, min.z);
+        Vector3 c = new Vector3(max.x, min.y, max.z), d = new Vector3(min.x, min.y, max.z);
+        Vector3 up = new Vector3(0f, max.y - min.y, 0f);
 
-        return _player.movement.LastFacingDirection;
+        Debug.DrawLine(a, b, color, duration); Debug.DrawLine(b, c, color, duration);
+        Debug.DrawLine(c, d, color, duration); Debug.DrawLine(d, a, color, duration);
+        Debug.DrawLine(a + up, b + up, color, duration); Debug.DrawLine(b + up, c + up, color, duration);
+        Debug.DrawLine(c + up, d + up, color, duration); Debug.DrawLine(d + up, a + up, color, duration);
+        Debug.DrawLine(a, a + up, color, duration); Debug.DrawLine(b, b + up, color, duration);
+        Debug.DrawLine(c, c + up, color, duration); Debug.DrawLine(d, d + up, color, duration);
     }
 
     private float CalculateDamage(AttackType type, bool isCenterHit)

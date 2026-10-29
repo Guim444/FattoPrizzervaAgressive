@@ -123,7 +123,22 @@ public class PlayerAnimations : MonoBehaviour
 
         var state = player.currentState;
 
-        if (state == State.Moving || state == State.Running || state == State.Idle)
+        // Mientras el animator siga mostrando el golpe usamos el giro del golpe
+        // aunque el estado ya sea otro, asi no se ve un frame mirando al lado contrario
+        AnimatorStateInfo current = animator.GetCurrentAnimatorStateInfo(0);
+        if (current.IsName("Punch"))
+        {
+            player.movement.ApplyPunchFlip();
+            return;
+        }
+
+        if (current.IsName("RunningPunch"))
+        {
+            player.movement.RefreshSpriteFlip();
+            return;
+        }
+
+        if (state == State.Moving || state == State.Running || state == State.Idle || state == State.Punching)
             player.movement.EnforceInvertedSpriteFlip();
         else if (state == State.PunchRunning)
             player.movement.RefreshSpriteFlip();

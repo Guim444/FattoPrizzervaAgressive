@@ -170,6 +170,28 @@ public class HUDManager : MonoBehaviour
         OnClickCombatPosition();
     }
 
+    // Empieza el combate contra el boss 0, siempre desde la fase 1
+    public void StartBattleBoss0()
+    {
+        if (!CanUseModeSelection()) return;
+        if (enemyRio == null || playableAreaManager == null || ringManager == null)
+        {
+            Debug.LogError("[HUDManager] StartBattleBoss0 necesita enemyRio, playableAreaManager y ringManager", this);
+            return;
+        }
+
+        Time.timeScale = 1f;
+        if (enemy != null) enemy.SetActive(false);
+        if (ringManager != null) ringManager.enabled = false;
+        playableAreaManager.SetActive(true);
+        enemyRio.SetActive(true);
+
+        // El control de fases se crea la primera vez que se empieza el combate
+        BossFightPhaseController phases = GetComponent<BossFightPhaseController>();
+        if (phases == null) phases = gameObject.AddComponent<BossFightPhaseController>();
+        phases.Begin(ringManager, enemyRio.transform);
+    }
+
     public void CompleteChurchTestCameraTransition()
     {
         Time.timeScale = 1f;
