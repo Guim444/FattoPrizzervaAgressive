@@ -30,9 +30,19 @@ public class RioTutteAnimatorDriver : EnemyAnimatorDriver
 
     protected override void DriveSpecificParams()
     {
-        _anim.SetBool("dashGrab",      _attacks.IsUsingDashGrab);
-        _anim.SetBool("isGrabbing",    _attacks.IsGrabbing);
-        _anim.SetBool("superDash",     _attacks.IsUsingSuperDash);
+        // Por ahora el Dash nuevo reutiliza las animaciones que ya existen
+        // Canal: la carrera de DashGrab, Dash: la del teletransporte de SuperDash
+        // La carrera del agarre tambien usa la de DashGrab
+        RioTutteDashAttack dash = _rioTutte.Dash;
+        RioTutteGrabAttack grab = _rioTutte.Grab;
+        bool channeling = dash != null && dash.IsChanneling;
+        bool dashing = dash != null && dash.IsDashing;
+        bool grabRunning = grab != null && grab.IsRunning;
+        bool grabHolding = grab != null && grab.IsHoldingPlayer;
+
+        _anim.SetBool("dashGrab",      _attacks.IsUsingDashGrab || channeling || grabRunning);
+        _anim.SetBool("isGrabbing",    _attacks.IsGrabbing || grabHolding);
+        _anim.SetBool("superDash",     _attacks.IsUsingSuperDash || dashing);
         _anim.SetBool("knockDownFront", _rioTutte.groundedTimer > 0f &&  _rioTutte.fallDirection);
         _anim.SetBool("knockDownBack",  _rioTutte.groundedTimer > 0f && !_rioTutte.fallDirection);
         _anim.SetInteger("phase",      _rioTutte.CurrentPhase);

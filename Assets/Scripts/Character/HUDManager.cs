@@ -189,8 +189,12 @@ public class HUDManager : MonoBehaviour
         // El control de fases se crea la primera vez que se empieza el combate
         BossFightPhaseController phases = GetComponent<BossFightPhaseController>();
         if (phases == null) phases = gameObject.AddComponent<BossFightPhaseController>();
+        phases.enabled = true;
         phases.Begin(ringManager, enemyRio.transform);
     }
+
+    // El boss del combate, lo usan las pruebas
+    public GameObject EnemyRio => enemyRio;
 
     public void CompleteChurchTestCameraTransition()
     {

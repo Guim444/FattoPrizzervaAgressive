@@ -65,11 +65,34 @@ public class RioTutteEnemy : EnemyBase, IPhaseChangeHandler
     //  INIT
     // ────────────────────────────────────────────────────────────
 
+    // Cuanto se reduce el radio del collider del boss, el original es muy grande
+    [Header("Hitbox")]
+    [SerializeField] private float hitboxRadiusScale = 0.6f;
+
+    // Vida del combate de prueba, se muestra en la barra de arriba
+    [Header("Vida")]
+    public float maxLife = 20f;
+
+    // Si esta activo el boss no pierde vida
+    public bool lockLife;
+
+    public float Life { get; private set; }
+
+    // Si esta desactivado el boss solo camina hacia el jugador
+    public bool attacksEnabled = true;
+
     protected override void Awake()
     {
         base.Awake();
         _attacks = GetComponent<RioTutteAttacks>();
         _anim    = GetComponentInChildren<Animator>();
+        _cc.radius *= hitboxRadiusScale;
+        Life = maxLife;
+    }
+
+    public void ResetLife()
+    {
+        Life = maxLife;
     }
 
     // ────────────────────────────────────────────────────────────
@@ -79,10 +102,24 @@ public class RioTutteEnemy : EnemyBase, IPhaseChangeHandler
     // When true, RioTutte orients each frame towards the player by Z axis (free mode / phase 2+).
     public bool facePlayerByZ;
 
+    // Modo de prueba del Dash: solo hace el Dash y se queda quieto entre dashes
+    public bool dashPackMode;
+
+    // En el modo de prueba tambien puede usar el agarre, elige por distancia
+    public bool grabEnabled;
+
+    private RioTutteDashAttack _dash;
+    public RioTutteDashAttack Dash => _dash != null ? _dash : (_dash = GetComponent<RioTutteDashAttack>());
+
+    private RioTutteGrabAttack _grab;
+    public RioTutteGrabAttack Grab => _grab != null ? _grab : (_grab = GetComponent<RioTutteGrabAttack>());
+
     protected override void Update()
     {
         // Sync IsAttacking with the attacks component before base.Update() reads it
-        IsAttacking = _attacks.IsAttacking;
+        IsAttacking = _attacks.IsAttacking
+                      || (Dash != null && Dash.IsBusy)
+                      || (Grab != null && Grab.IsBusy);
 
         base.Update();
 
@@ -95,6 +132,10 @@ public class RioTutteEnemy : EnemyBase, IPhaseChangeHandler
     {
         // Physical penetration resolution player↔RioTutte
         if (_player == null) return;
+
+        // Durante el Dash no se resuelve la separacion, el choque lo gestiona el propio Dash
+        if (Dash != null && Dash.IsDashing) return;
+        if (Grab != null && Grab.IsBusy) return;
 
         Vector3 delta = transform.position - _player.transform.position;
         delta.y = 0f;
@@ -151,6 +192,13 @@ public class RioTutteEnemy : EnemyBase, IPhaseChangeHandler
 
     protected override void FollowPlayerLogic()
     {
+        // En el modo Dash no camina hacia el jugador
+        if (dashPackMode)
+        {
+            IsMoving = false;
+            return;
+        }
+
         if (_attacks.IsAttacking || groundedTimer > 0f)
         {
             IsMoving = false;
@@ -176,6 +224,20 @@ public class RioTutteEnemy : EnemyBase, IPhaseChangeHandler
 
     protected override void ExecuteAttack()
     {
+        if (!attacksEnabled) return;
+
+        // En el modo de prueba ataca con el Dash, o con el agarre si el jugador esta cerca
+        if (dashPackMode)
+        {
+            if (Grab != null && Grab.IsBusy) return;
+
+            if (grabEnabled && Grab != null && Grab.CanStart && Dash != null && !Dash.IsBusy && Grab.PlayerIsNear())
+                Grab.StartGrab();
+            else if (Dash != null && Dash.CanStart)
+                Dash.StartDash();
+            return;
+        }
+
         switch (CurrentPhase)
         {
             case 0:
@@ -201,6 +263,8 @@ public class RioTutteEnemy : EnemyBase, IPhaseChangeHandler
     protected override void OnDamagedBehaviour(int dmg)
     {
         if (dmg <= 0) return;
+
+        if (!lockLife) Life = Mathf.Max(0f, Life - dmg);
 
         // Do not interrupt the fall animation with Hit
         if (groundedTimer <= 0f)

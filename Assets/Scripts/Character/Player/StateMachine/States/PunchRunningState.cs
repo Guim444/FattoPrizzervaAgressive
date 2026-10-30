@@ -8,7 +8,7 @@ public class PunchRunningState : IStateActions
     public PlayerStaminaManager stamina;
     public BoxCollider punchCollider;
 
-    // RunningPunch clip: 1.9583333 s. Impact event: 1.625 s.
+    // RunningPunch clip: 1.9583333 s. Impact event: 0.125 s.
     private const float PunchRunDuration = 1.9583333f;
 
     private float staminaCost;
@@ -30,6 +30,13 @@ public class PunchRunningState : IStateActions
 
         int damageBoost = Mathf.Clamp(combat.damageBoost, 0, 2);
         actualSpeed = movement.punchRunningBaseSpeed;
+
+        // Se apunta el Thrust con el que sale el puñetazo y hacia donde va
+        int thrust = Time.time - combat.ThrustUpdatedTime < 0.2f ? combat.CurrentThrust : 1;
+        Vector3 punchDirection = movement.LastDirection.magnitude > 0.1f
+            ? movement.LastDirection.normalized
+            : new Vector3(0f, 0f, movement.FacingZSign);
+        combat.RegisterPunch(thrust, punchDirection);
 
         // El endurance sube temporalmente según la fase de carrera:
         // más damageBoost → golpe más poderoso (tabla KnockbackResolver)
@@ -84,6 +91,7 @@ public class PunchRunningState : IStateActions
             player.combatAttackHandler.CancelPreparedAttack();
 
         player.combat.ClearEnduranceOverride();
+        player.combat.CurrentThrust = 0;
         player.canAttack          = true;
         player.combat.damageBoost = 0;
         punchExecuted             = false;

@@ -19,6 +19,7 @@ public class RunningState : IStateActions
     public float staminaCostPerSecond;
 
     private int _currentThrustPhase = 1;
+    private float _runTime;
 
     public float[] topSpeed            = { 9f,       11f,      13.5f    };
     public float[] currentAcceleration = { 0.0035f,  0.0045f,  0.006f  };
@@ -34,6 +35,11 @@ public class RunningState : IStateActions
         player.animator.speed = 1;
         actualSpeed           = baseSpeed;
         stamina.SetRunning(staminaCostPerSecond);
+
+        // El Thrust por tiempo empieza en 1 al empezar a correr
+        _runTime = 0f;
+        player.combat.CurrentThrust = 1;
+        player.combat.ThrustUpdatedTime = Time.time;
     }
 
     public void Update()
@@ -44,6 +50,11 @@ public class RunningState : IStateActions
 
         Vector3 input = movement.GetDirectionalInput();
         HandleTurn(input, movement, combat);
+
+        // Thrust de 1 a 4 segun los segundos que lleva corriendo sin girar
+        _runTime += dt;
+        combat.CurrentThrust = combat.GetThrustForRunTime(_runTime);
+        combat.ThrustUpdatedTime = Time.time;
 
         float inertiaTurnSpeed = _currentThrustPhase == 3
             ? movement.runningTurnSpeedPhase3
@@ -80,6 +91,7 @@ public class RunningState : IStateActions
         if (sharpTurn)
         {
             _currentThrustPhase   = 1;
+            _runTime              = 0f;
             combat.damageBoost    = 0;
             player.animator.speed = 1;
         }

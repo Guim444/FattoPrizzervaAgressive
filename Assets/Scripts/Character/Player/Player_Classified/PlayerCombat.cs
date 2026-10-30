@@ -21,6 +21,38 @@ public class PlayerCombat : MonoBehaviour, IDamageable
 
     public int endurance = 0;
 
+    // Thrust actual del jugador de 1 a 4, sube con el tiempo que lleva corriendo
+    public int CurrentThrust { get; set; }
+    public float ThrustUpdatedTime { get; set; } = -100f;
+
+    // Segundos corriendo que hacen falta para llegar a cada Thrust, el primero es el T1
+    public float[] thrustStartTimes = { 0f, 1f, 2f, 2.5f };
+
+    // Datos del ultimo puñetazo, el Dash del boss los lee para saber si lo interrumpes
+    public int LastPunchThrust { get; private set; }
+    public float LastPunchTime { get; private set; } = -100f;
+    public Vector3 LastPunchDirection { get; private set; }
+
+    // Devuelve el Thrust que corresponde a ese tiempo corriendo
+    public int GetThrustForRunTime(float runTime)
+    {
+        int thrust = 1;
+        for (int i = 1; i < thrustStartTimes.Length; i++)
+        {
+            if (runTime >= thrustStartTimes[i]) thrust = i + 1;
+        }
+
+        return thrust;
+    }
+
+    // Se llama al empezar un puñetazo, thrust 0 es un puñetazo normal
+    public void RegisterPunch(int thrust, Vector3 direction)
+    {
+        LastPunchThrust = thrust;
+        LastPunchTime = Time.time;
+        LastPunchDirection = direction;
+    }
+
     private int? _temporaryEnduranceOverride;
 
     /// <summary>

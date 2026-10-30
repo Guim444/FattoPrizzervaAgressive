@@ -8,7 +8,7 @@ public class PunchingState : IStateActions
     public PlayerStaminaManager stamina;
     public SphereCollider punchCollider;
 
-    // Impact event: 0.8333333 s. The safety window keeps the state active
+    // Impact event: 0.125 s. The safety window keeps the state active
     // until Unity has dispatched the Animation Event, including at low frame rates.
     private const float PunchDuration = 0.95f;
 
@@ -25,6 +25,7 @@ public class PunchingState : IStateActions
         punchExecuted = true;
 
         player.movement.ApplyPunchFlip();
+        player.combat.RegisterPunch(0, new Vector3(0f, 0f, player.movement.FacingZSign));
         player.combatAttackHandler.PrepareAttack(AttackType.Punch);
         player.animator.SetTrigger("isPunching");
 

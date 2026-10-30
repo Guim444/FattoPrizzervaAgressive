@@ -30,6 +30,9 @@ public class CombatAttackHandler : MonoBehaviour
 
     public float punchBoxHeight = 2f;
 
+    // Distancia entre el jugador y el inicio de la caja, mas alto es mas lejos
+    public float punchBoxStartOffset = 0.5f;
+
     // Altura del centro de la caja sobre el jugador
     public float punchBoxCenterHeight = 1f;
 
@@ -70,6 +73,9 @@ public class CombatAttackHandler : MonoBehaviour
 
     public void CancelPreparedAttack()
     {
+        if (_hasPreparedAttack)
+            Debug.LogWarning("[Attack] Golpe cancelado antes de llegar al frame de impacto");
+
         _hasPreparedAttack = false;
     }
 
@@ -84,7 +90,11 @@ public class CombatAttackHandler : MonoBehaviour
         AttackType attackType = _preparedAttackType;
         _hasPreparedAttack = false;
 
-        if (!_player.canAttack) return;
+        if (!_player.canAttack)
+        {
+            Debug.LogWarning("[Attack] Impacto ignorado porque el jugador no puede atacar en este momento");
+            return;
+        }
         _player.canAttack = false;
 
         // Pega hacia el lado al que mira, nunca hacia la profundidad
@@ -93,7 +103,7 @@ public class CombatAttackHandler : MonoBehaviour
 
         float reach = attackType == AttackType.PunchRunning ? punchRangeRunning : punchRange;
         Vector3 halfExtents = new Vector3(punchBoxDepth * 0.5f, punchBoxHeight * 0.5f, reach * 0.5f);
-        Vector3 center = transform.position + Vector3.up * punchBoxCenterHeight + facing * (reach * 0.5f);
+        Vector3 center = transform.position + Vector3.up * punchBoxCenterHeight + facing * (punchBoxStartOffset + reach * 0.5f);
 
         DrawDebugBox(center, halfExtents, Color.red, 0.5f);
 
